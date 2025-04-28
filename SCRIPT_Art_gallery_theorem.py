@@ -1,12 +1,12 @@
+"""math: Базовая математическая библиотека;
+manim: Основная анимационная библиотека.
+    Примечание. Не обращай внимания на Wildcard предупреждение.
+    Если написать import manim, то это не будет соответсвовать документации
+    manim;
+shapely: Продвинутая геометрии библиотека. Использую для нахождения пересечений."""
+
 import math
-
-"""Библиотека анимации"""
-
 from manim import *
-
-
-"""Библиотеки геометрии"""
-from shapely.affinity import scale as shapely_scale
 from shapely.geometry import (
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
@@ -29,7 +29,7 @@ rus_text_template.output_format = ".xdv"
 
 
 class IntroText(Scene):
-    """Класс отображения приветственного текста (тема и автор)"""
+    """Класс отображения приветственного текста (тема и автор)."""
 
     def construct(self):
         # Приветственный текст
@@ -78,12 +78,12 @@ class SubthemeHandler(Scene):
 
 class ProblemDescription(Scene):
     """Класс отрисовки картинной галереи, отображения поля видимости.
-    В течении действия рассказываю о сути проблемы"""
+    В течении действия рассказываю о сути проблемы."""
 
     # ОХРАННИК
     def is_segment_inside_polygon(self, segment: Line, polygon: Polygon) -> bool:
         """Функция определяет, лежит ли отрезок внутри многоугольника (даже если
-        отрезок касается вершин многоугольника)"""
+        отрезок касается вершин многоугольника)."""
 
         # Преобразуем manim Polygon в список координат
         poly_coords = [tuple(p)[:2] for p in polygon.get_vertices()]
@@ -98,6 +98,10 @@ class ProblemDescription(Scene):
         return shapely_poly.contains(shapely_line)
 
     def create_guard_view(self, guard: Dot, gallery: Polygon) -> Polygon:
+        """Функция, рассчитывающая поле зрения охранника внутри галереи и возвращающая
+        это поле зрения в качестве многоугольника.
+        ПРИМЕЧАНИЕ. Не анимирует многоугольник."""
+
         view_points_coords = []
         gallery_corners = gallery.get_vertices()
 
@@ -116,7 +120,8 @@ class ProblemDescription(Scene):
             if self.is_segment_inside_polygon(help_line, gallery):
                 view_points_coords.append(wall_angle)
 
-                # Проверяем, видит ли охранник точку за углом (проверяем для всех углов, даже меньше 180)
+                # Проверяем, видит ли охранник точку за углом (проверяем
+                # для всех углов, даже меньше 180)
                 bbox_coord = shapely_gallery.bounds
                 bb_dx = bbox_coord[2] - bbox_coord[0]
                 bb_dy = bbox_coord[3] - bbox_coord[1]
@@ -296,3 +301,4 @@ class ProblemDescription(Scene):
                     ]
                 )
 """
+"""from shapely.affinity import scale as shapely_scale"""
