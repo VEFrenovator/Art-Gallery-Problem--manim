@@ -1,11 +1,17 @@
+import math
+
+"""Библиотека анимации"""
+
 from manim import *
+
+
+"""Библиотеки геометрии"""
+from shapely.affinity import scale as shapely_scale
 from shapely.geometry import (
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
     LineString,
 )
-from shapely.affinity import scale as shapely_scale
-import math
 
 
 # Русский шрифт
@@ -23,6 +29,8 @@ rus_text_template.output_format = ".xdv"
 
 
 class IntroText(Scene):
+    """Класс отображения приветственного текста (тема и автор)"""
+
     def construct(self):
         # Приветственный текст
         theme = Text(
@@ -56,20 +64,26 @@ class SubthemeHandler(Scene):
             "Триангуляция",
             "Раскраска",
             "Остатки",
-            "Заключение"
+            "Заключение",
         ]
 
     def set_subtheme(self, subtheme_name: str | None) -> None:
         if subtheme_name not in self.subthemes:
-            raise ValueError(f"Given subtheme '{subtheme_name}' doesn't exist in the list of subthemes")
+            raise ValueError(
+                f"Given subtheme '{subtheme_name}' doesn't exist in the list of subthemes"
+            )
 
-        if subtheme_name is not None:
-            self 
+        # if subtheme_name is not None:
 
 
 class ProblemDescription(Scene):
+    """Класс отрисовки картинной галереи, отображения поля видимости.
+    В течении действия рассказываю о сути проблемы"""
+
     # ОХРАННИК
     def is_segment_inside_polygon(self, segment: Line, polygon: Polygon) -> bool:
+        """Функция определяет, лежит ли отрезок внутри многоугольника (даже если
+        отрезок касается вершин многоугольника)"""
 
         # Преобразуем manim Polygon в список координат
         poly_coords = [tuple(p)[:2] for p in polygon.get_vertices()]
@@ -115,13 +129,11 @@ class ProblemDescription(Scene):
                 end = help_line.get_end()
                 direct = end - start
                 new_end = start + abs(max_calc_dist) * direct
-                #help_lines.add(Line(start, new_end))
+                # help_lines.add(Line(start, new_end))
 
                 shapely_help_line = LineString([start, new_end])
 
-                intersection = shapely_gallery.boundary.intersection(
-                    shapely_help_line
-                )
+                intersection = shapely_gallery.boundary.intersection(shapely_help_line)
 
                 if not intersection.is_empty:
                     match intersection.geom_type:
@@ -131,21 +143,21 @@ class ProblemDescription(Scene):
                             ips = list(intersection.geoms)
                         case _:
                             ips = []
-                
+
                     for ip in ips:
                         x, y = ip.coords[0][:2]
                         possible = [x, y, 0]
                         if self.is_segment_inside_polygon(
-                            Line(guard.get_center(), possible),
-                            gallery
+                            Line(guard.get_center(), possible), gallery
                         ):
                             view_points_coords.append(possible)
-                            
-        if len(view_points_coords) < 3:
-            raise ValueError(f"Need at least 3 coords to create a Polygon, has {len(view_points_coords)}.")
-        return Polygon(*view_points_coords)
-        #return help_lines
 
+        if len(view_points_coords) < 3:
+            raise ValueError(
+                f"Need at least 3 coords to create a Polygon, has {len(view_points_coords)}."
+            )
+        return Polygon(*view_points_coords)
+        # return help_lines
 
     def construct(self):
         # ЛОКАЛИЗАЦИЯ (выключено)
