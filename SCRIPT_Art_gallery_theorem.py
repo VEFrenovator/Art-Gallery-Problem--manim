@@ -28,6 +28,37 @@ rus_text_template.tex_compiler = "xelatex"
 rus_text_template.output_format = ".xdv"
 
 
+class Subtheme:
+    """Базовый python класс подтем. Хранит имя подтемы и приоритет (уровень)."""
+
+    def __init__(self, priorety: int, name: str):
+        self.priorety = priorety
+        self.name = name
+
+
+class SubthemeHandler:
+    """Класс для анимационной смены подтем.
+    Просьба запускать subtheme_start_play в соответствующем названию подтемы подклассе Scene.
+    Запускать subtheme_end_play последней строкой соответственно."""
+
+    def __init__(self):
+        self.subtheme_variants = [
+            Subtheme(1, "Формулировка"),
+            Subtheme(1, "Некоторые очевидные выводы"),
+            Subtheme(1, "Решение Стива Фиска"),
+            Subtheme(2, "Алгоритм"),
+            Subtheme(2, "Способы триангуляции")
+        ]
+        self.sequence = 0
+    
+    def subtheme_start_play(self, scene: Scene, subtheme_name: str | None=None):
+        """Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации."""
+
+        if subtheme_name is not None:
+            try:
+                self.subtheme_variants.
+
+
 class IntroText(Scene):
     """Класс отображения приветственного текста (тема и автор)."""
 
@@ -53,27 +84,6 @@ class IntroText(Scene):
         self.wait()
         self.play(AnimationGroup(Unwrite(text_out_group), lag_ratio=out_lag_ratio))
         self.wait()
-
-
-class SubthemeHandler(Scene):
-    def __init__(self):
-        self.sequence = 0
-        self.subthemes = [
-            "Проблема",
-            "Решение Стива Фиска",
-            "Триангуляция",
-            "Раскраска",
-            "Остатки",
-            "Заключение",
-        ]
-
-    def set_subtheme(self, subtheme_name: str | None) -> None:
-        if subtheme_name not in self.subthemes:
-            raise ValueError(
-                f"Given subtheme '{subtheme_name}' doesn't exist in the list of subthemes"
-            )
-
-        # if subtheme_name is not None:
 
 
 class ProblemDescription(Scene):
