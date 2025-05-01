@@ -145,8 +145,10 @@ class SubthemeHandler:
             out_name.set_opacity(0)
             scene.add(out_name)
             # Вывод
-            out_name.animate.shift(DOWN)
-            out_name.animate.set_opacity(1)
+            scene.play(
+                out_name.animate.shift(DOWN),
+                out_name.animate.set_opacity(1)
+            )
             # Обновление переменных
             self.sequence += 1
             self.current_out_texts[new_priorety] = out_name
