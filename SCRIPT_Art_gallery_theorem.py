@@ -28,47 +28,138 @@ rus_text_template.tex_compiler = "xelatex"
 rus_text_template.output_format = ".xdv"
 
 
-class Subtheme:
-    """Базовый python класс подтем. Хранит имя подтемы и приоритет (уровень)."""
-
-    def __init__(self, priorety: int, name: str):
-        self.priorety = priorety
-        self.name = name
-
-
 class SubthemeHandler:
-    """Класс для анимационной смены подтем.
+    """
+    Класс для анимационной смены подтем.
     Просьба запускать subtheme_start_play в соответствующем названию подтемы подклассе Scene.
-    Запускать subtheme_end_play последней строкой соответственно."""
+    """
 
     def __init__(self):
+        # Многомерный массив (дерево) вариантов подтем в формате ["название", [подтемы более
+        # низкого уровня]].
+        # Примечание: если подтем более низкого уровня нет, массив объявляется пустым.
+
         self.subtheme_variants = [
-            Subtheme(1, "Формулировка"),
-            Subtheme(1, "Некоторые очевидные выводы"),
-            Subtheme(1, "Решение Стива Фиска"),
-            Subtheme(2, "Алгоритм"),
-            Subtheme(2, "Способы триангуляции")
+            ["Введение", [
+                ["Формулировка", []],
+                ["Некоторые очевидные выводы", []]
+            ]],
+            ["Решение Стива Фиска", [
+                ["Триангуляция", [
+                    ["Жадный алгоритм", []],
+                    ["Триангуляция выпуклого многоугольника", []],
+                    ["Метод отрезания ушей", [
+                        ["Некоторые определения", []],
+                        ["Некоторые теоремы", [
+                            ["Триангуляционная теорема", [
+                                ["Следствие 1", []],
+                                ["Следствие 2", []]
+                            ]],
+                            ["Теорема о двух ушах", []]
+                        ]],
+                        ["Алгоритм нахождения уха и оценка вычислительной сложности", []],
+                        ["Алгоритм триангуляции и оценка вычислительной сложности", []],
+                        ["Вывод о методе триангуляции путём отрезания ушей", []]
+                    ]]
+                ]],
+                ["Раскраска вершин", []],
+                ["Остатки от деления", []],
+                ["Вывод о решении Стива Фикса", []]
+            ]],
+            ["Заключение и напутствие", []]
         ]
-        self.sequence = 0
-    
-    def subtheme_start_play(self, scene: Scene, subtheme_name: str | None=None):
-        """Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации."""
 
-        if subtheme_name is not None:
-            # Проверка, есть ли переданное имя подтемы в списке подтем.
-            # Не обращай внимание на предупреждение о ре-рэйзе. Это необходимая мера защиты.
+        # Дерево subtheme_variants, но развёрнутое в список путей (pre-order)
+        self.flat_paths = [] # Список путей в кортежах (путь, название)
+        self._unpack(self.subtheme_variants, [])
+        self.sequence = -1  # Номер подтемы в flat_path
 
-            try:
-                index = self.subtheme_variants.index(subtheme_name)
-            except ValueError:
-                raise ValueError(f"Given subtheme '{subtheme_name}' doesn't exist in the list of subthemes.")
-            
-            subtheme = self.subtheme_variants[index]
+        self.current_texts = {} # {приоритет: текст}
+        self.current_lines = {} # {приоритет: линия}. Примечание: линии нет над 1-ым уровнем
+
+    def _unpack(self, subtree: list, path):
+        """
+        Рекурсивный обход дерева для формирования списка путей.
+        Каждый путь - это масив индексов до текущей подтемы в subtree. Например, чтобы дойти
+        до подтемы "Жадный алгорим" нужно использовать путь [1, 0, 0].
+        При этом на одной итерации мы зацикливаемся в самом себе.
+        """
+        for i, (name, children) in enumerate(subtree):
+            new_path = path + [i]
+
+            self.flat_paths.append((new_path, name))
+            if children:
+                self._unpack(children, new_path)
+
+    def subtheme_start_play(self, scene: Scene) -> None:
+        """
+        Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации.
+        """
+        new_index = self.sequence + 1
+
+        # Если вышли за границы массива
+        if new_index >= len(self.flat_paths):
+            raise IndexError("Достигли конца массива")
+
+        # new_index, new_path, new_priorety, new_name - это то, что должно быть выведено по итогу
+        new_path, new_name = self.flat_paths[new_index]
+        new_priorety = len(new_path)
+
+        # Текст класса manim для вывода
+        out_name = Text(new_name, font_size=20)
+
+        # Если это первый вывод
+        if self.sequence == -1:
+            # Подготовка
+            top = scene.camera.frame_center()[1] + scene.camera.frame_height() / 2  # Смещение
+            out_name.move_to([0, top, 0] + DOWN * 0.75)
+            # Вывод
+            scene.play(Write(out_name))
+            # Перезапсь переменных
+            self.current_texts[new_priorety] = new_name
+            self.sequence += 1
+            # Остановка функции
+            return
+
+        # Если это уже не первый вывод
+        # Переменные о прошлой подтеме
+        prev_path, _ = self.flat_paths[self.sequence]
+        prev_priorety = len(prev_path)
+        prev_out_name = self.current_texts.get(prev_priorety)
+
+        # Если нужно вывести тему более низкого уровня
+        if new_priorety > prev_priorety:
+            # Создаём линию, ести ещё не создали
+            if new_priorety not in self.current_lines:
+
+                out_line = Line(
+                    start=prev_out_name.get_center() + DOWN * 0.75 + LEFT,
+                    end=prev_out_name.get_center() + DOWN * 0.75 + RIGHT
+                )   # manim класс
+                scene.play(Create(out_line))    # Вывод
+                self.current_lines[new_priorety] = out_line # Обновление переменной
+
+            # Подготовка
+            out_name.move_to(prev_out_name)
+            out_name.set_opacity(0)
+            scene.add(out_name)
+            # Вывод
+            out_name.animate.shift(DOWN)
+            out_name.animate.set_opacity(1)
+            # Обновление переменных
+            self.sequence += 1
+            self.current_texts[new_priorety] = new_name
+            return
+
+        # Если нужно вывести тему такого-же уровня
+        #elif new_priorety == prev_priorety:
 
 
 
 class IntroText(Scene):
-    """Класс отображения приветственного текста (тема и автор)."""
+    """
+    Класс отображения приветственного текста (тема и автор).
+    """
 
     def construct(self):
         # Приветственный текст
@@ -95,13 +186,17 @@ class IntroText(Scene):
 
 
 class ProblemDescription(Scene):
-    """Класс отрисовки картинной галереи, отображения поля видимости.
-    В течении действия рассказываю о сути проблемы."""
+    """
+    Класс отрисовки картинной галереи, отображения поля видимости.
+    В течении действия рассказываю о сути проблемы.
+    """
 
     # ОХРАННИК
     def is_segment_inside_polygon(self, segment: Line, polygon: Polygon) -> bool:
-        """Функция определяет, лежит ли отрезок внутри многоугольника (даже если
-        отрезок касается вершин многоугольника)."""
+        """
+        Функция определяет, лежит ли отрезок внутри многоугольника (даже если
+        отрезок касается вершин многоугольника).
+        """
 
         # Преобразуем manim Polygon в список координат
         poly_coords = [tuple(p)[:2] for p in polygon.get_vertices()]
@@ -116,9 +211,11 @@ class ProblemDescription(Scene):
         return shapely_poly.contains(shapely_line)
 
     def create_guard_view(self, guard: Dot, gallery: Polygon) -> Polygon:
-        """Функция, рассчитывающая поле зрения охранника внутри галереи и возвращающая
+        """
+        Функция, рассчитывающая поле зрения охранника внутри галереи и возвращающая
         это поле зрения в качестве многоугольника.
-        ПРИМЕЧАНИЕ. Не анимирует многоугольник."""
+        ПРИМЕЧАНИЕ. Не анимирует многоугольник.
+        """
 
         view_points_coords = []
         gallery_corners = gallery.get_vertices()
