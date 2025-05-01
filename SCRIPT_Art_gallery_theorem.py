@@ -55,8 +55,16 @@ class SubthemeHandler:
         """Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации."""
 
         if subtheme_name is not None:
+            # Проверка, есть ли переданное имя подтемы в списке подтем.
+            # Не обращай внимание на предупреждение о ре-рэйзе. Это необходимая мера защиты.
+
             try:
-                self.subtheme_variants.
+                index = self.subtheme_variants.index(subtheme_name)
+            except ValueError:
+                raise ValueError(f"Given subtheme '{subtheme_name}' doesn't exist in the list of subthemes.")
+            
+            subtheme = self.subtheme_variants[index]
+
 
 
 class IntroText(Scene):
