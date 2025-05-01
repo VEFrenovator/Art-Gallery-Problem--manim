@@ -74,8 +74,9 @@ class SubthemeHandler:
         self._unpack(self.subtheme_variants, [])
         self.sequence = -1  # Номер подтемы в flat_path
 
-        self.current_texts = {} # {приоритет: текст}
-        self.current_lines = {} # {приоритет: линия}. Примечание: линии нет над 1-ым уровнем
+        self.current_out_texts: dict[int, Text] = {} # {приоритет: текст}
+        self.current_out_lines: dict[int, Line] = {} # {приоритет: линия}. Примечание: линии 
+        # нет над 1-ым уровнем
 
     def _unpack(self, subtree: list, path):
         """
@@ -116,7 +117,7 @@ class SubthemeHandler:
             # Вывод
             scene.play(Write(out_name))
             # Перезапсь переменных
-            self.current_texts[new_priorety] = new_name
+            self.current_out_texts[new_priorety] = out_name
             self.sequence += 1
             # Остановка функции
             return
@@ -125,19 +126,19 @@ class SubthemeHandler:
         # Переменные о прошлой подтеме
         prev_path, _ = self.flat_paths[self.sequence]
         prev_priorety = len(prev_path)
-        prev_out_name = self.current_texts.get(prev_priorety)
+        prev_out_name = self.current_out_texts.get(prev_priorety)
 
         # Если нужно вывести тему более низкого уровня
         if new_priorety > prev_priorety:
             # Создаём линию, ести ещё не создали
-            if new_priorety not in self.current_lines:
+            if new_priorety not in self.current_out_lines:
 
                 out_line = Line(
                     start=prev_out_name.get_center() + DOWN * 0.75 + LEFT,
                     end=prev_out_name.get_center() + DOWN * 0.75 + RIGHT
                 )   # manim класс
                 scene.play(Create(out_line))    # Вывод
-                self.current_lines[new_priorety] = out_line # Обновление переменной
+                self.current_out_lines[new_priorety] = out_line # Обновление переменной
 
             # Подготовка
             out_name.move_to(prev_out_name)
@@ -148,7 +149,7 @@ class SubthemeHandler:
             out_name.animate.set_opacity(1)
             # Обновление переменных
             self.sequence += 1
-            self.current_texts[new_priorety] = new_name
+            self.current_out_texts[new_priorety] = out_name
             return
 
         # Если нужно вывести тему такого-же уровня
