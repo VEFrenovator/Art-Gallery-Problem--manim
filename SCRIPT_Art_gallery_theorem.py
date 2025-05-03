@@ -116,8 +116,8 @@ class SubthemeHandler:
         # Если это первый вывод
         if self.sequence == -1:
             # Подготовка
-            top = scene.camera.frame_center()[1] + scene.camera.frame_height() / 2  # Смещение
-            out_name.move_to([0, top, 0] + DOWN * 0.75)
+            top = scene.camera.frame_center[1] + scene.camera.frame_height / 2  # Смещение
+            out_name.move_to([0, top, 0] + DOWN * 0.35)
             # Вывод
             scene.play(Write(out_name))
             # Перезапсь переменных
@@ -138,9 +138,11 @@ class SubthemeHandler:
             if new_priority not in self.current_out_lines:
 
                 out_line = Line(
-                    start=prev_out_name.get_center() + DOWN * 0.75 + LEFT,
-                    end=prev_out_name.get_center() + DOWN * 0.75 + RIGHT
+                    start=RIGHT, end=LEFT, stroke_width=DEFAULT_STROKE_WIDTH * 0.75
+                ).next_to(
+                    prev_out_name, DOWN, buff=0.125
                 )   # manim класс
+
                 scene.play(Create(out_line))    # Вывод
                 self.current_out_lines[new_priority] = out_line # Обновление переменной
 
@@ -223,8 +225,9 @@ class IntroText(Scene):
         author.move_to(theme.get_bottom() + DOWN * 0.2)
 
         # Вывод
+        global_subtheme_handler.update_subtheme(self)
         text_out_group = VGroup(theme, author)
-        out_lag_ratio = 0.8
+        out_lag_ratio = 1.5
 
         self.wait()
         self.play(AnimationGroup(Write(text_out_group), lag_ratio=out_lag_ratio))
@@ -389,6 +392,7 @@ class ProblemDescription(Scene):
         comb_polygon.move_to(ORIGIN)
 
         # ВЫВОД
+        global_subtheme_handler.update_subtheme(self)
         self.wait()
 
         # Отрисовка многоугольника
@@ -399,7 +403,7 @@ class ProblemDescription(Scene):
                 lag_ratio=1,
             )
         )
-
+        global_subtheme_handler.update_subtheme(self)
         self.wait()
 
         # Мерцание вершин
@@ -425,10 +429,11 @@ class ProblemDescription(Scene):
             )
 
             self.wait(0.25)
-
+        
         # Отрисовка охранника
         guard = Dot([-0.5, 0, 0], 0.12, color=PURE_RED)
         self.play(Create(guard))
+        global_subtheme_handler.update_subtheme(self)
 
         self.wait()
 
