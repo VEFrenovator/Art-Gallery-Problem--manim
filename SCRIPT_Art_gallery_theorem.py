@@ -75,7 +75,7 @@ class SubthemeHandler:
         self.sequence = -1  # Номер подтемы в flat_path
 
         self.current_out_texts: dict[int, Text] = {} # {приоритет: текст}
-        self.current_out_lines: dict[int, Line] = {} # {приоритет: линия}. Примечание: линии 
+        self.current_out_lines: dict[int, Line] = {} # {приоритет: линия}. Примечание: линии
         # нет над 1-ым уровнем
 
     def _unpack(self, subtree: list, path):
@@ -107,7 +107,8 @@ class SubthemeHandler:
         new_priorety = len(new_path)
 
         # Текст класса manim для вывода
-        out_name = Text(new_name, font_size=20)
+        out_name = Text(new_name, font_size=20, fill_opacity=0)
+        scene.add(out_name)
 
         # Если это первый вывод
         if self.sequence == -1:
@@ -142,7 +143,6 @@ class SubthemeHandler:
 
             # Подготовка
             out_name.move_to(prev_out_name)
-            out_name.set_opacity(0)
             scene.add(out_name)
             # Вывод
             scene.play(
@@ -155,8 +155,55 @@ class SubthemeHandler:
             return
 
         # Если нужно вывести тему такого-же уровня
-        #elif new_priorety == prev_priorety:
+        if new_priorety == prev_priorety:
+            # Подготовка
+            out_name.move_to(prev_out_name).shift(RIGHT)
+            # Вывод
+            scene.play(
+                prev_out_name.animate.set_opacity(0),
+                prev_out_name.animate.shift(LEFT),
+                out_name.animate.set_opacity(1),
+                out_name.animate.shift(LEFT)
+            )
+            # Перезапись переменных
+            self.sequence += 1
+            self.current_out_texts[new_priorety] = out_name
+            # Остановка функции
+            return
 
+        # Если требуется вывести подтему более высокго уровня
+        if new_priorety < prev_priorety:
+
+            # Втягивание всех подтем более низкого уровня
+            for priorety in sorted(self.current_out_texts.keys(), reverse=True):
+                line = self.current_out_lines[priorety]
+                text = self.current_out_texts[priorety]
+                scene.play(
+                    Uncreate(line),
+                    text.animate.set_opacity(0),
+                    text.animate.move_to(prev_out_name)
+                )
+                del self.current_out_lines[priorety]
+                del self.current_out_texts[priorety]
+            
+            # Проворот
+            # Подготовка
+            out_name.move_to(prev_out_name.get_center()).shift(RIGHT)
+            # Вывод
+            scene.play(
+                prev_out_name.animate.set_opacity(0),
+                prev_out_name.animate.shift(LEFT),
+                out_name.animate.set_opacity(1),
+                out_name.animate.shift(LEFT)
+            )
+            # Перезапись переменных
+            self.sequence += 1
+            self.current_out_texts[new_priorety] = out_name
+            # Остановка функции
+            return
+        
+        # Если никакой из if не сработал, значит есть ошибка проверки
+        raise RuntimeError("subtheme_start_play func didn't decide if block to make return")
 
 
 class IntroText(Scene):
