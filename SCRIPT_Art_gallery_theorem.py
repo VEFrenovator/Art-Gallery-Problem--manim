@@ -14,24 +14,10 @@ from shapely.geometry import (
 )
 
 
-# Русский шрифт
-rus_text_template = TexTemplate()
-rus_text_template.add_to_preamble(
-    r"""
-    \usepackage{polyglossia}
-    \setmainlanguage{russian}
-    \usepackage{fontspec}
-    \setmainfont{Times New Roman}    
-"""
-)
-rus_text_template.tex_compiler = "xelatex"
-rus_text_template.output_format = ".xdv"
-
-
 class SubthemeHandler:
     """
     Класс для анимационной смены подтем.
-    Просьба запускать subtheme_start_play в соответствующем названию подтемы подклассе Scene.
+    Просьба запускать update_subtheme в соответствующем названию подтемы подклассе Scene.
     """
 
     def __init__(self):
@@ -92,7 +78,7 @@ class SubthemeHandler:
             if children:
                 self._unpack(children, new_path)
 
-    def subtheme_start_play(self, scene: Scene) -> None:
+    def update_subtheme(self, scene: Scene) -> None:
         """
         Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации.
         """
@@ -198,7 +184,24 @@ class SubthemeHandler:
             return
 
         # Если никакой из if не сработал, значит есть ошибка проверки
-        raise RuntimeError("subtheme_start_play func didn't decide if block to make return")
+        raise RuntimeError("update_subtheme func didn't decide if block to make return")
+
+
+# Глобальный экземпляр SubthemeHandler
+global_subtheme_handler = SubthemeHandler()
+
+# Русский шрифт
+rus_text_template = TexTemplate()
+rus_text_template.add_to_preamble(
+    r"""
+    \usepackage{polyglossia}
+    \setmainlanguage{russian}
+    \usepackage{fontspec}
+    \setmainfont{Times New Roman}    
+"""
+)
+rus_text_template.tex_compiler = "xelatex"
+rus_text_template.output_format = ".xdv"
 
 
 class IntroText(Scene):
