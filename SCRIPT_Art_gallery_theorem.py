@@ -96,15 +96,32 @@ class SubthemeHandler:
         """
         Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации.
         """
+
+        def change_same_priorities() -> None:
+            """
+            Анимационный поврот в заданом уровня старой подтемы на новою. Как в барабане.
+            Сюда приходят два случая: когда нужно вывести такого же уровня и более высокого уровня.
+            """
+            # Подготовка
+            out_name.move_to(prev_out_name.get_center()).shift(RIGHT)
+            # Вывод
+            scene.play(
+                prev_out_name.animate.shift(LEFT).set_opacity(0),
+                out_name.animate.shift(LEFT).set_opacity(1)
+            )
+            # Изменение переменных
+            self.sequence += 1
+            self.current_out_texts[new_priority] = out_name
+
         new_index = self.sequence + 1
 
         # Если вышли за границы массива
         if new_index >= len(self.flat_paths):
             raise IndexError("Достигли конца массива")
 
-        # new_index, new_path, new_priorety, new_name - это то, что должно быть выведено по итогу
+        # new_index, new_path, new_priority, new_name - это то, что должно быть выведено по итогу
         new_path, new_name = self.flat_paths[new_index]
-        new_priorety = len(new_path)
+        new_priority = len(new_path)
 
         # Текст класса manim для вывода
         out_name = Text(new_name, font_size=20, fill_opacity=0)
@@ -118,7 +135,7 @@ class SubthemeHandler:
             # Вывод
             scene.play(Write(out_name))
             # Перезапсь переменных
-            self.current_out_texts[new_priorety] = out_name
+            self.current_out_texts[new_priority] = out_name
             self.sequence += 1
             # Остановка функции
             return
@@ -126,24 +143,23 @@ class SubthemeHandler:
         # Если это уже не первый вывод
         # Переменные о прошлой подтеме
         prev_path, _ = self.flat_paths[self.sequence]
-        prev_priorety = len(prev_path)
-        prev_out_name = self.current_out_texts.get(prev_priorety)
+        prev_priority = len(prev_path)
+        prev_out_name = self.current_out_texts.get(prev_priority)
 
         # Если нужно вывести тему более низкого уровня
-        if new_priorety > prev_priorety:
+        if new_priority > prev_priority:
             # Создаём линию, ести ещё не создали
-            if new_priorety not in self.current_out_lines:
+            if new_priority not in self.current_out_lines:
 
                 out_line = Line(
                     start=prev_out_name.get_center() + DOWN * 0.75 + LEFT,
                     end=prev_out_name.get_center() + DOWN * 0.75 + RIGHT
                 )   # manim класс
                 scene.play(Create(out_line))    # Вывод
-                self.current_out_lines[new_priorety] = out_line # Обновление переменной
+                self.current_out_lines[new_priority] = out_line # Обновление переменной
 
             # Подготовка
             out_name.move_to(prev_out_name)
-            scene.add(out_name)
             # Вывод
             scene.play(
                 out_name.animate.shift(DOWN),
@@ -151,57 +167,36 @@ class SubthemeHandler:
             )
             # Обновление переменных
             self.sequence += 1
-            self.current_out_texts[new_priorety] = out_name
+            self.current_out_texts[new_priority] = out_name
             return
 
         # Если нужно вывести тему такого-же уровня
-        if new_priorety == prev_priorety:
-            # Подготовка
-            out_name.move_to(prev_out_name).shift(RIGHT)
-            # Вывод
-            scene.play(
-                prev_out_name.animate.set_opacity(0),
-                prev_out_name.animate.shift(LEFT),
-                out_name.animate.set_opacity(1),
-                out_name.animate.shift(LEFT)
-            )
-            # Перезапись переменных
-            self.sequence += 1
-            self.current_out_texts[new_priorety] = out_name
+        if new_priority == prev_priority:
+            # Прокрутка
+            change_same_priorities()
             # Остановка функции
             return
 
         # Если требуется вывести подтему более высокго уровня
-        if new_priorety < prev_priorety:
+        if new_priority < prev_priority:
 
             # Втягивание всех подтем более низкого уровня
-            for priorety in sorted(self.current_out_texts.keys(), reverse=True):
-                line = self.current_out_lines[priorety]
-                text = self.current_out_texts[priorety]
+            for priority in sorted(self.current_out_texts.keys(), reverse=True):
+                line = self.current_out_lines[priority]
+                text = self.current_out_texts[priority]
                 scene.play(
                     Uncreate(line),
                     text.animate.set_opacity(0),
                     text.animate.move_to(prev_out_name)
                 )
-                del self.current_out_lines[priorety]
-                del self.current_out_texts[priorety]
-            
+                del self.current_out_lines[priority]
+                del self.current_out_texts[priority]
+
             # Проворот
-            # Подготовка
-            out_name.move_to(prev_out_name.get_center()).shift(RIGHT)
-            # Вывод
-            scene.play(
-                prev_out_name.animate.set_opacity(0),
-                prev_out_name.animate.shift(LEFT),
-                out_name.animate.set_opacity(1),
-                out_name.animate.shift(LEFT)
-            )
-            # Перезапись переменных
-            self.sequence += 1
-            self.current_out_texts[new_priorety] = out_name
+            change_same_priorities()
             # Остановка функции
             return
-        
+
         # Если никакой из if не сработал, значит есть ошибка проверки
         raise RuntimeError("subtheme_start_play func didn't decide if block to make return")
 
