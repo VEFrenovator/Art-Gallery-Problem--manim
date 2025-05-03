@@ -103,7 +103,7 @@ class SubthemeHandler:
 
         # Если вышли за границы массива
         if new_index >= len(self.flat_paths):
-            raise IndexError("Достигли конца массива")
+            raise IndexError("Достигли конца массива. Вывод подтемы невозможен.")
 
         # new_index, new_path, new_priority, new_name - это то, что должно быть выведено по итогу
         new_path, new_name = self.flat_paths[new_index]
@@ -117,9 +117,9 @@ class SubthemeHandler:
         if self.sequence == -1:
             # Подготовка
             top = scene.camera.frame_center[1] + scene.camera.frame_height / 2  # Смещение
-            out_name.move_to([0, top, 0] + DOWN * 0.35)
+            out_name.move_to([0, top, 0] + UP * (1. - 0.35))
             # Вывод
-            scene.play(Write(out_name))
+            out_name.animate.shift(DOWN).set_opacity(1)
             # Перезапсь переменных
             self.current_out_texts[new_priority] = out_name
             self.sequence += 1
@@ -138,9 +138,9 @@ class SubthemeHandler:
             if new_priority not in self.current_out_lines:
 
                 out_line = Line(
-                    start=RIGHT, end=LEFT, stroke_width=DEFAULT_STROKE_WIDTH * 0.75
+                    start=RIGHT, end=LEFT, buff=0.125
                 ).next_to(
-                    prev_out_name, DOWN, buff=0.125
+                    prev_out_name, DOWN
                 )   # manim класс
 
                 scene.play(Create(out_line))    # Вывод
@@ -149,10 +149,7 @@ class SubthemeHandler:
             # Подготовка
             out_name.move_to(prev_out_name)
             # Вывод
-            scene.play(
-                out_name.animate.shift(DOWN),
-                out_name.animate.set_opacity(1)
-            )
+            scene.play(out_name.animate.next_to(prev_out_name, DOWN).set_opacity(1))
             # Обновление переменных
             self.sequence += 1
             self.current_out_texts[new_priority] = out_name
@@ -170,15 +167,17 @@ class SubthemeHandler:
 
             # Втягивание всех подтем более низкого уровня
             for priority in sorted(self.current_out_texts.keys(), reverse=True):
-                line = self.current_out_lines[priority]
-                text = self.current_out_texts[priority]
-                scene.play(
-                    Uncreate(line),
-                    text.animate.set_opacity(0),
-                    text.animate.move_to(prev_out_name)
-                )
-                del self.current_out_lines[priority]
-                del self.current_out_texts[priority]
+                if priority > prev_priority:
+                    line = self.current_out_lines.get(priority)
+                    text = self.current_out_texts.get(priority)
+                    scene.play(
+                        FadeOut(line),
+                        text.animate.move_to(prev_out_name).set_opacity(0)
+                    )
+                    if line:
+                        del self.current_out_lines[priority]
+                    if text:
+                        del self.current_out_texts[priority]
 
             # Проворот
             change_same_priorities()
@@ -225,7 +224,6 @@ class IntroText(Scene):
         author.move_to(theme.get_bottom() + DOWN * 0.2)
 
         # Вывод
-        global_subtheme_handler.update_subtheme(self)
         text_out_group = VGroup(theme, author)
         out_lag_ratio = 1.5
 
@@ -392,7 +390,6 @@ class ProblemDescription(Scene):
         comb_polygon.move_to(ORIGIN)
 
         # ВЫВОД
-        global_subtheme_handler.update_subtheme(self)
         self.wait()
 
         # Отрисовка многоугольника
@@ -403,7 +400,6 @@ class ProblemDescription(Scene):
                 lag_ratio=1,
             )
         )
-        global_subtheme_handler.update_subtheme(self)
         self.wait()
 
         # Мерцание вершин
@@ -429,19 +425,17 @@ class ProblemDescription(Scene):
             )
 
             self.wait(0.25)
-        
         # Отрисовка охранника
         guard = Dot([-0.5, 0, 0], 0.12, color=PURE_RED)
         self.play(Create(guard))
-        global_subtheme_handler.update_subtheme(self)
 
         self.wait()
 
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
 
         self.wait()
-
-
+        for _ in range(1):  global_subtheme_handler.update_subtheme(self)
+        self.wait()
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
                     wall_start = v
