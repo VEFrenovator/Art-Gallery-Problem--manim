@@ -83,17 +83,17 @@ class SubthemeHandler:
         Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации.
         """
 
-        def change_same_priorities() -> None:
+        def change_same_priorities(prev: Text, new: Text) -> None:
             """
             Анимационный поврот в заданом уровня старой подтемы на новою. Как в барабане.
             Сюда приходят два случая: когда нужно вывести такого же уровня и более высокого уровня.
             """
             # Подготовка
-            new_out_text.move_to(prev_out_text.get_center()).shift(RIGHT)
+            new.move_to(prev).shift(RIGHT)
             # Вывод
             scene.play(
-                prev_out_text.animate.shift(LEFT).set_opacity(0),
-                new_out_text.animate.shift(LEFT).set_opacity(1)
+                prev.animate.shift(LEFT).set_opacity(0),
+                new.animate.shift(LEFT).set_opacity(1)
             )
             # Изменение переменных
             self.sequence += 1
@@ -158,7 +158,7 @@ class SubthemeHandler:
         # Если нужно вывести тему такого-же уровня
         if new_priority == prev_priority:
             # Прокрутка
-            change_same_priorities()
+            change_same_priorities(prev_out_text, new_out_text)
             # Остановка функции
             return
 
@@ -183,8 +183,7 @@ class SubthemeHandler:
                         del self.current_out_texts[priority]
 
             # Проворот
-            prev_out_text = target_text
-            change_same_priorities()
+            change_same_priorities(target_text, new_out_text)
             # Остановка функции
             return
 
