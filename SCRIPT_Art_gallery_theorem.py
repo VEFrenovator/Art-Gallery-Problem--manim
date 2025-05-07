@@ -114,7 +114,7 @@ class SubthemeHandler:
         if self.sequence == -1:
             # Подготовка
             top = scene.camera.frame_center[1] + scene.camera.frame_height / 2  # Смещение
-            new_out_text.move_to([0, top, 0] + UP * (1. - 0.35))
+            new_out_text.move_to([0, top, 0] + UP * (1. - 0.125))
             # Вывод
             scene.play(new_out_text.animate.shift(DOWN).set_opacity(1))
             # Перезапсь переменных
