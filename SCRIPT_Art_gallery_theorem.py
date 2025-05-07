@@ -89,15 +89,15 @@ class SubthemeHandler:
             Сюда приходят два случая: когда нужно вывести такого же уровня и более высокого уровня.
             """
             # Подготовка
-            out_name.move_to(prev_out_name.get_center()).shift(RIGHT)
+            new_out_text.move_to(prev_out_text.get_center()).shift(RIGHT)
             # Вывод
             scene.play(
-                prev_out_name.animate.shift(LEFT).set_opacity(0),
-                out_name.animate.shift(LEFT).set_opacity(1)
+                prev_out_text.animate.shift(LEFT).set_opacity(0),
+                new_out_text.animate.shift(LEFT).set_opacity(1)
             )
             # Изменение переменных
             self.sequence += 1
-            self.current_out_texts[new_priority] = out_name
+            self.current_out_texts[new_priority] = new_out_text
 
         new_index = self.sequence + 1
 
@@ -110,18 +110,18 @@ class SubthemeHandler:
         new_priority = len(new_path)
 
         # Текст класса manim для вывода
-        out_name = Text(new_name, font_size=20, fill_opacity=0)
-        scene.add(out_name)
+        new_out_text = Text(new_name, font_size=20, fill_opacity=0)
+        scene.add(new_out_text)
 
         # Если это первый вывод
         if self.sequence == -1:
             # Подготовка
             top = scene.camera.frame_center[1] + scene.camera.frame_height / 2  # Смещение
-            out_name.move_to([0, top, 0] + UP * (1. - 0.35))
+            new_out_text.move_to([0, top, 0] + UP * (1. - 0.35))
             # Вывод
-            out_name.animate.shift(DOWN).set_opacity(1)
+            scene.play(new_out_text.animate.shift(DOWN).set_opacity(1))
             # Перезапсь переменных
-            self.current_out_texts[new_priority] = out_name
+            self.current_out_texts[new_priority] = new_out_text
             self.sequence += 1
             # Остановка функции
             return
@@ -130,7 +130,7 @@ class SubthemeHandler:
         # Переменные о прошлой подтеме
         prev_path, _ = self.flat_paths[self.sequence]
         prev_priority = len(prev_path)
-        prev_out_name = self.current_out_texts.get(prev_priority)
+        prev_out_text = self.current_out_texts.get(prev_priority)
 
         # Если нужно вывести тему более низкого уровня
         if new_priority > prev_priority:
@@ -138,21 +138,21 @@ class SubthemeHandler:
             if new_priority not in self.current_out_lines:
 
                 out_line = Line(
-                    start=RIGHT, end=LEFT, buff=0.125
+                    start=RIGHT, end=LEFT, stroke_width=DEFAULT_STROKE_WIDTH * 0.5
                 ).next_to(
-                    prev_out_name, DOWN
+                    prev_out_text, DOWN, buff=0.125
                 )   # manim класс
 
                 scene.play(Create(out_line))    # Вывод
                 self.current_out_lines[new_priority] = out_line # Обновление переменной
 
             # Подготовка
-            out_name.move_to(prev_out_name)
+            new_out_text.move_to(prev_out_text)
             # Вывод
-            scene.play(out_name.animate.next_to(prev_out_name, DOWN).set_opacity(1))
+            scene.play(new_out_text.animate.next_to(prev_out_text, DOWN).set_opacity(1))
             # Обновление переменных
             self.sequence += 1
-            self.current_out_texts[new_priority] = out_name
+            self.current_out_texts[new_priority] = new_out_text
             return
 
         # Если нужно вывести тему такого-же уровня
@@ -164,15 +164,18 @@ class SubthemeHandler:
 
         # Если требуется вывести подтему более высокго уровня
         if new_priority < prev_priority:
-
+            target_text = self.current_out_texts[new_priority]
             # Втягивание всех подтем более низкого уровня
-            for priority in sorted(self.current_out_texts.keys(), reverse=True):
-                if priority > prev_priority:
+            for priority in sorted(
+                self.current_out_texts.keys(),
+                reverse=True
+            )[:prev_priority]:
+                if priority > new_priority:
                     line = self.current_out_lines.get(priority)
                     text = self.current_out_texts.get(priority)
                     scene.play(
                         FadeOut(line),
-                        text.animate.move_to(prev_out_name).set_opacity(0)
+                        text.animate.move_to(target_text).set_opacity(0)
                     )
                     if line:
                         del self.current_out_lines[priority]
@@ -180,6 +183,7 @@ class SubthemeHandler:
                         del self.current_out_texts[priority]
 
             # Проворот
+            prev_out_text = target_text
             change_same_priorities()
             # Остановка функции
             return
@@ -434,8 +438,9 @@ class ProblemDescription(Scene):
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
 
         self.wait()
-        for _ in range(8):
+        for _ in range(len(global_subtheme_handler.flat_paths)):
             global_subtheme_handler.update_subtheme(self)
+            self.wait()
         self.wait()
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
