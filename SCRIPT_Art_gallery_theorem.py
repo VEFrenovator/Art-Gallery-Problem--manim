@@ -75,6 +75,14 @@ class SubthemeHandler:
             if children:
                 self._unpack(children, new_path)
 
+    def init_subtheme(self, scene: Scene) -> None:
+        """
+        Функция добавляет нужную подтему на экран мгновенно. Нужно запускать при инициализации
+        класса чтобы подтема не пропадала при окончании предыдущего и не появлялась при
+        включении нового.
+        """
+        scene.add(*[*self.current_out_texts.values(), *self.current_out_lines.values()])
+
     def update_subtheme(self, scene: Scene) -> None:
         """
         Функция анимационно сменяет подтему. Требует Scene класс для отображения анимации.
@@ -445,6 +453,9 @@ class ProblemDescription(Scene):
             global_subtheme_handler.update_subtheme(self)
             self.wait()
         self.wait()
+        self.remove(*self.mobjects)
+        global_subtheme_handler.init_subtheme(self)
+        self.wait(3)
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
                     wall_start = v
