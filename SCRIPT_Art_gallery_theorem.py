@@ -37,10 +37,7 @@ class SubthemeHandler:
                     ["Метод отрезания ушей", [
                         ["Некоторые определения", []],
                         ["Некоторые теоремы", [
-                            ["Триангуляционная теорема", [
-                                ["Следствие 1", []],
-                                ["Следствие 2", []]
-                            ]],
+                            ["Триангуляционная теорема", []],
                             ["Теорема о двух ушах", []]
                         ]],
                         ["Алгоритм нахождения уха и оценка вычислительной сложности", []],
@@ -89,11 +86,11 @@ class SubthemeHandler:
             Сюда приходят два случая: когда нужно вывести такого же уровня и более высокого уровня.
             """
             # Подготовка
-            new.move_to(prev).shift(RIGHT)
+            new.move_to(prev).shift(RIGHT * 2)
             # Вывод
             scene.play(
-                prev.animate.shift(LEFT).set_opacity(0),
-                new.animate.shift(LEFT).set_opacity(1)
+                prev.animate.shift(LEFT * 2).set_opacity(0),
+                new.animate.shift(LEFT * 2).set_opacity(1)
             )
             # Изменение переменных
             self.sequence += 1
