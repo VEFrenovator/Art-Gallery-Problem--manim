@@ -185,7 +185,7 @@ class SubthemeHandler:
             return
 
         # Если никакой из if не сработал, значит есть ошибка проверки
-        raise RuntimeError("update_subtheme func didn't decide if block to make return")
+        raise RuntimeError("update_subtheme func didn't decide IF-block to make return")
 
 
 # Глобальный экземпляр SubthemeHandler
@@ -434,7 +434,8 @@ class ProblemDescription(Scene):
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
 
         self.wait()
-        for _ in range(1):  global_subtheme_handler.update_subtheme(self)
+        for _ in range(8):
+            global_subtheme_handler.update_subtheme(self)
         self.wait()
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
