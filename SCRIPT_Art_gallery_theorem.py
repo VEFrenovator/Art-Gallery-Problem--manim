@@ -107,7 +107,7 @@ class SubthemeHandler:
         new_priority = len(new_path)
 
         # Текст класса manim для вывода
-        new_out_text = Text(new_name, font_size=20, fill_opacity=0)
+        new_out_text = Text(new_name, font_size=15, fill_opacity=0)
         scene.add(new_out_text)
 
         # Если это первый вывод
@@ -131,22 +131,29 @@ class SubthemeHandler:
 
         # Если нужно вывести тему более низкого уровня
         if new_priority > prev_priority:
-            # Создаём линию, ести ещё не создали
-            if new_priority not in self.current_out_lines:
+            buff_between_out_texts = 0.15
+            # Создаём линию
+            out_line = Line(
+                start=RIGHT * (buff_between_out_texts + 0.5),
+                end=LEFT * (buff_between_out_texts + 0.5),
+                stroke_width=DEFAULT_STROKE_WIDTH * 0.5
+            ).next_to(
+                prev_out_text, DOWN, buff=buff_between_out_texts / 2
+            )   # manim класс
 
-                out_line = Line(
-                    start=RIGHT, end=LEFT, stroke_width=DEFAULT_STROKE_WIDTH * 0.5
-                ).next_to(
-                    prev_out_text, DOWN, buff=0.125
-                )   # manim класс
-
-                scene.play(Create(out_line))    # Вывод
-                self.current_out_lines[new_priority] = out_line # Обновление переменной
+            scene.play(Create(out_line))    # Вывод
+            self.current_out_lines[new_priority] = out_line # Обновление переменной
 
             # Подготовка
             new_out_text.move_to(prev_out_text)
             # Вывод
-            scene.play(new_out_text.animate.next_to(prev_out_text, DOWN).set_opacity(1))
+            scene.play(
+                new_out_text.animate.next_to(
+                    prev_out_text,
+                    DOWN,
+                    buff=buff_between_out_texts
+                ).set_opacity(1)
+            )
             # Обновление переменных
             self.sequence += 1
             self.current_out_texts[new_priority] = new_out_text
@@ -434,7 +441,7 @@ class ProblemDescription(Scene):
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
 
         self.wait()
-        for _ in range(len(global_subtheme_handler.flat_paths)):
+        for _ in range(5):
             global_subtheme_handler.update_subtheme(self)
             self.wait()
         self.wait()
