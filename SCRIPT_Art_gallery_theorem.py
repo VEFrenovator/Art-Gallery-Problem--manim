@@ -220,7 +220,7 @@ rus_text_template.tex_compiler = "xelatex"
 rus_text_template.output_format = ".xdv"
 
 
-class IntroText(Scene):
+class Greetings(Scene):
     """
     Класс отображения приветственного текста (тема и автор).
     """
@@ -306,17 +306,17 @@ class ProblemDescription(Scene):
                 bb_dy = bbox_coord[3] - bbox_coord[1]
                 max_calc_dist = math.sqrt(
                     bb_dx**2 + bb_dy**2
-                )  # Диагональ ограничевающего прямоугольника для галереи
+                )  # Диагональ ограничевающего прямоугольника галереи
 
                 # Продлеваем отрезок зрения охраника
                 start = help_line.get_start()
                 end = help_line.get_end()
                 direct = end - start
                 new_end = start + abs(max_calc_dist) * direct
-                # help_lines.add(Line(start, new_end))
 
                 shapely_help_line = LineString([start, new_end])
 
+                # Ищем пересечения с многоугольником
                 intersection = shapely_gallery.boundary.intersection(shapely_help_line)
 
                 if not intersection.is_empty:
@@ -336,16 +336,16 @@ class ProblemDescription(Scene):
                         ):
                             view_points_coords.append(possible)
 
+        # Возврат
         if len(view_points_coords) < 3:
             raise ValueError(
                 f"Need at least 3 coords to create a Polygon, has {len(view_points_coords)}."
             )
         return Polygon(*view_points_coords)
-        # return help_lines
 
     def construct(self):
-        # ЛОКАЛИЗАЦИЯ (выключено)
-        # global rus_text_template
+        # ПОДТЕМА
+        global_subtheme_handler.update_subtheme(self)
 
         # МНОГОУГОЛЬНИК
         # Множители маштаба
@@ -449,13 +449,15 @@ class ProblemDescription(Scene):
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
 
         self.wait()
-        for _ in range(5):
-            global_subtheme_handler.update_subtheme(self)
-            self.wait()
-        self.wait()
-        self.remove(*self.mobjects)
-        global_subtheme_handler.init_subtheme(self)
-        self.wait(3)
+
+
+class SomeObivious(Scene):
+    def construct(self):
+        # ПОДТЕМА
+        global_subtheme_handler.update_subtheme(self)
+        # МНОГОУГОЛЬНИКИ
+        3_points = Polygon()
+
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
                     wall_start = v
