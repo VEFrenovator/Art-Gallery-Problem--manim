@@ -61,7 +61,7 @@ class SubthemeHandler:
         self.current_out_lines: dict[int, Line] = {} # {приоритет: линия}. Примечание: линии
         # нет над 1-ым уровнем
 
-    def _unpack(self, subtree: list, path):
+    def _unpack(self, subtree: list, path) -> None:
         """
         Рекурсивный обход дерева для формирования списка путей.
         Каждый путь - это масив индексов до текущей подтемы в subtree. Например, чтобы дойти
@@ -248,6 +248,17 @@ class Greetings(Scene):
         self.play(AnimationGroup(Unwrite(text_out_group), lag_ratio=out_lag_ratio))
         self.wait()
 
+
+class TableOfContents(Scene):
+    def construct(self):
+        out_lines = []
+        line = Tex("Table of Content", tex_template = rus_text_template)
+        for i, (path, name) in enumerate(global_subtheme_handler.flat_paths):
+            num_str = ".".join(str(i+1) for i in path)
+            out_lines.append(num_str)
+        self.play(Write(VGroup(Text(line for line in out_lines))))
+        self.wait()
+        self.play(Write())
 
 class ProblemDescription(Scene):
     """
@@ -447,16 +458,9 @@ class ProblemDescription(Scene):
         self.wait()
 
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
-
+        for _ in range(len(global_subtheme_handler.flat_paths)):
+            global_subtheme_handler.update_subtheme(self)
         self.wait()
-
-
-class SomeObivious(Scene):
-    def construct(self):
-        # ПОДТЕМА
-        global_subtheme_handler.update_subtheme(self)
-        # МНОГОУГОЛЬНИКИ
-        3_points = Polygon()
 
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
