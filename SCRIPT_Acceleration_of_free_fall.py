@@ -7,12 +7,13 @@ class TennisBall(VMobject):
         self,
         radius: float = 1.0,
         fill_color: ParsableManimColor | None = None,
+        stroke_width: float = 8.0,
         **kwargs
     ):
         super().__init__(**kwargs)
 
         # Создание мяча
-        self.body = Circle(radius=radius, color=WHITE, stroke_width=8)
+        self.body = Circle(radius=radius, color=WHITE, stroke_width=stroke_width)
 
         if fill_color is not None:
             self.body.set_fill(fill_color, opacity=1)
@@ -23,7 +24,7 @@ class TennisBall(VMobject):
             angle=PI / 2,
             start_angle=PI / 4,
             stroke_color=WHITE,
-            stroke_width=4,
+            stroke_width=stroke_width / 2,
         ).flip(RIGHT)
         arc1.shift(arc1.radius * (1 - math.cos(arc1.angle / 2)) * DOWN)
 
@@ -32,11 +33,11 @@ class TennisBall(VMobject):
             angle=PI / 2,
             start_angle=PI / 4 + PI,
             stroke_color=WHITE,
-            stroke_width=4,
+            stroke_width=stroke_width / 2,
         ).flip(RIGHT)
         arc2.shift(arc2.radius * (1 - math.cos(arc2.angle / 2)) * UP)
 
-        self.arcs = VGroup([arc1, arc2])
+        self.arcs = VGroup([arc1, arc2]).rotate(PI / 2)
         self.add(self.body, self.arcs)
 
 
@@ -72,4 +73,9 @@ class Greetings(Scene):
 class AccelerationOfFreeFall(Scene):
     def construct(self):
         # Мяч
-        self.add(TennisBall(fill_color=RED))
+        tennis_ball = TennisBall(radius=0.45, fill_color=RED, stroke_width=6.0)
+        self.play(GrowFromCenter(tennis_ball), run_time=2)
+        self.wait()
+        # self.play(tennis_ball.animate.rotate(PI / 2, about_point=tennis_ball.body.get_center()))
+        self.play(tennis_ball.animate.shift(UP * 3))
+
