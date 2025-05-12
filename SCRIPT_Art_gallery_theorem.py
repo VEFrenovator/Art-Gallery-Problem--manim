@@ -81,6 +81,10 @@ class SubthemeHandler:
         класса чтобы подтема не пропадала при окончании предыдущего и не появлялась при
         включении нового.
         """
+        if len(self.current_out_texts) == 0:
+            raise ValueError("""There is not any created subthemes, so init is
+impossible. Try func 'update_subtheme' at first.""")
+
         scene.add(*[*self.current_out_texts.values(), *self.current_out_lines.values()])
 
     def update_subtheme(self, scene: Scene) -> None:
@@ -458,9 +462,6 @@ class ProblemDescription(Scene):
         self.wait()
 
         self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
-        for _ in range(len(global_subtheme_handler.flat_paths)):
-            global_subtheme_handler.update_subtheme(self)
-        self.wait()
 
 """
                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
