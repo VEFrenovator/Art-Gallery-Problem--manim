@@ -2,6 +2,9 @@ import math
 from manim import *
 
 
+GRAVITY = 9.80665
+
+
 class TennisBall(VMobject):
     def __init__(
         self,
@@ -74,8 +77,47 @@ class AccelerationOfFreeFall(Scene):
     def construct(self):
         # Мяч
         tennis_ball = TennisBall(radius=0.45, fill_color=RED, stroke_width=6.0)
+
+        self.wait()
         self.play(GrowFromCenter(tennis_ball), run_time=2)
         self.wait()
-        # self.play(tennis_ball.animate.rotate(PI / 2, about_point=tennis_ball.body.get_center()))
         self.play(tennis_ball.animate.shift(UP * 3))
+        self.wait()
+
+        # Свободное падение No. 1
+        # Изменяемые переменные
+        duration = 2
+        cam_zoom = 1
+
+        # Отслеживающие/системные переменные
+        time = ValueTracker()
+        start_coords = tennis_ball.body.get_center()
+
+        # Трасер
+        trace = TracedPath(
+            traced_point_func=tennis_ball.body.get_center,
+            stroke_width=100,
+            stroke_color=RED,
+            stroke_opacity=0.5,
+            dissipating_time=0.35,
+        )
+        self.add(trace)
+
+        # Обработчик падения
+        tennis_ball.add_updater(
+            update_function=lambda mob: mob.move_to(
+                start_coords + DOWN * (time.get_value() ** 2) * GRAVITY * cam_zoom * 0.5
+            )
+        )
+
+        # Падение
+        self.play(time.animate.set_value(duration), rate_func=linear, run_time=duration)
+        self.wait()
+        # Удаление обработчика
+        tennis_ball.clear_updaters()
+        # Возврат в точку координат
+        self.play(tennis_ball.animate.move_to(ORIGIN), run_time=1.5)
+        self.wait()
+
+        # Свободное падение No. 2
 
