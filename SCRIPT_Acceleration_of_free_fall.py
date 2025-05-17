@@ -1,27 +1,63 @@
+"""
+Цель: анимированный показ законов ускорения тел в свободном падении, выведение
+формул, отслеживание графиков, нужных для более глубокого изучения темы.
+"""
+
 import math
 from manim import *
 
 
+# Ускорение свободного падения
 GRAVITY = 9.80665
+
 # Русский шрифт
-rus_text_template = TexTemplate()
-rus_text_template.add_to_preamble(
-    r"""
-    \usepackage{polyglossia}
-    \setmainlanguage{russian}
-    \usepackage{fontspec}
-    \setmainfont{Times New Roman}    
-"""
+rus_text_template = TexTemplate(
+    tex_compiler="xelatex",
+    output_format=".xdv",
+    preamble=r"""
+        \usepackage{polyglossia}
+        \setmainlanguage{russian}
+        \usepackage{fontspec}
+        \setmainfont{Times New Roman}
+    """,
 )
-rus_text_template.tex_compiler = "xelatex"
-rus_text_template.output_format = ".xdv"
-# Стандартный шрифт
-standart_tex_template = TexTemplate()
-standart_tex_template.tex_compiler = "xelatex"
-standart_tex_template.output_format = ".xdv"
+
+
+class AnimateFreeFall(Animation):
+    """
+    Активация свободного падения.
+    """
+
+    def __init__(
+        self,
+        falling_mobject: Mobject,
+        duration: float,
+        gravity: float = GRAVITY,
+        cam_zoom: float = 1.0,
+        **kwargs
+    ):
+        # Инициализация родителя
+        super().__init__(falling_mobject, run_time=duration, rate_func=linear, **kwargs)
+
+        # Отслеживающе переменные
+        self.falling_mobject = falling_mobject
+        self.start_coords = falling_mobject.get_center()
+        self.gravity = gravity
+        self.cam_zoom = cam_zoom
+
+    def interpolate_mobject(self, alpha):
+        real_alpha = self.rate_func(alpha)
+        time = self.run_time * real_alpha
+        self.falling_mobject.move_to(
+            self.start_coords + DOWN * (time**2) * self.gravity * 0.5 * self.cam_zoom
+        )
 
 
 class TennisBall(VMobject):
+    """
+    Теннисный мячик - самый наглядный пример для показа.
+    """
+
     def __init__(
         self,
         radius: float = 1.0,
@@ -91,154 +127,71 @@ class Greetings(Scene):
 
 class AccelerationOfFreeFall(Scene):
     def construct(self):
-        def animate_free_fall(
-            scene: Scene = self,
-            falling_mobject: TennisBall = None,
-            duration: float = 2.0,
-            cam_zoom: float = 1.0,
-            return_into_pos: Vector | None = None,
-            parallel_anim_mobjects: VGroup | Mobject | None = None,
-        ) -> None:
-            # Отслеживающие/системные переменные
-            time = ValueTracker()
-            start_coords = falling_mobject.body.get_center()
-
-            # Трасер
-            trace = TracedPath(
-                traced_point_func=falling_mobject.body.get_center,
-                stroke_width=100 * cam_zoom,
-                stroke_color=RED,
-                stroke_opacity=[0.65, 0],
-                dissipating_time=0.35,
-            )
-            trace.set_z_index(-1)
-            scene.add(trace)
-
-            # Обработчик падения
-            falling_mobject.add_updater(
-                update_function=lambda mob: mob.move_to(
-                    start_coords
-                    + DOWN * (time.get_value() ** 2) * GRAVITY * cam_zoom * 0.5
-                )
-            )
-
-            # Парралельно обрабатываемые объекты
-            if parallel_anim_mobjects is None:
-                scene.play(
-                    time.animate.set_value(duration),
-                    rate_func=linear,
-                    run_time=duration,
-                )
-            else:
-                scene.play(
-                    Create(parallel_anim_mobjects, lag_ratio=0),
-                    time.animate.set_value(duration),
-                    rate_func=linear,
-                    run_time=duration,
-                )
-            # Падение
-
-            scene.wait()
-            # Удаление обработчика, трасера
-            falling_mobject.clear_updaters()
-            scene.remove(trace)
-            # Возврат
-            if return_into_pos is None:
-                return_pos = start_coords
-            else:
-                return_pos = return_into_pos
-            scene.play(falling_mobject.animate.move_to(return_pos), run_time=1.5)
-            scene.wait()
-
         # Мяч
         tennis_ball = TennisBall(radius=0.45, fill_color=RED, stroke_width=6.0)
 
+        # Показ мяча
         self.wait()
         self.play(GrowFromCenter(tennis_ball), run_time=2)
         self.wait()
-        self.play(tennis_ball.animate.shift(UP * 3))
+        self.play(tennis_ball.animate.to_edge(config.top))
         self.wait()
 
         # Свободное падение No. 1
-        duration = 2
-        animate_free_fall(
-            falling_mobject=tennis_ball, duration=duration, return_into_pos=ORIGIN
-        )
+        self.play(AnimateFreeFall(falling_mobject=tennis_ball, duration=5))
 
         # Свободное падение No. 2
-        duration = 5
-        # График скорости
-        range_dist = ([0, duration, 0.6], [0, duration * GRAVITY, 6])
-        length_dist = (config.frame_width / 2, config.frame_height - 2)
-        speed_axes = Axes(
-            x_range=range_dist[0],
-            y_range=range_dist[1],
-            x_length=length_dist[0],
-            y_length=length_dist[1],
-            axis_config={
-                "include_numbers": True,
-                "color": WHITE,
-                "tip_width": 0.15,
-                "tip_height": 0.15,
-            },
+        duration = 10
+        # Числовая система
+        number_plane = NumberPlane(
+            x_range=[0, duration, 1.5],
+            y_range=[0, max(duration * GRAVITY, duration**2 * GRAVITY * 0.5), 50],
+            x_length=config.frame_width / 2 - DEFAULT_MOBJECT_TO_EDGE_BUFFER,
+            y_length=config.frame_height - (DEFAULT_MOBJECT_TO_EDGE_BUFFER * 2),
+            faded_line_style={"stroke_color": WHITE},
+            background_line_style={"stroke_color": ORANGE, "stroke_opacity": 0.5},
+            axis_config = {"include_numbers": True},
         )
-        labels = speed_axes.get_axis_labels(
-            x_label=Text("Время, c").scale(0.5),
-        )[0].shift(LEFT)
-        y_label=VGroup(
-                Text("Скорость, м/с", color=YELLOW).shift(UP * 0.45),
-                Text("Расстояние, м", color=RED_B).shift(DOWN * 0.25),
-            ).scale(0.4).move_to(speed_axes.axis_labels[1].get_center()).shift(UP * 0.15)
 
-        speed_axes_help_grid = NumberPlane(
-            x_range=range_dist[0],
-            y_range=range_dist[1],
-            x_length=length_dist[0],
-            y_length=length_dist[1],
-            background_line_style={
-                "stroke_color": ORANGE,
-                "stroke_width": 1,
-                "stroke_opacity": 0.5,
-            },
-        )
-        speed_graphic = VGroup(speed_axes, speed_axes_help_grid, labels, y_label)
-
-        free_fall_speed_func_plot = speed_axes.plot(
+        # Графики функций (plots)
+        free_fall_speed_func_plot = number_plane.plot(
             lambda time: time * GRAVITY, use_vectorized=True, color=YELLOW
         )
-        free_fall_dist_func_plot = speed_axes.plot(
+        free_fall_dist_func_plot = number_plane.plot(
             lambda time: time**2 * GRAVITY * 0.5, use_vectorized=True, color=RED_B
         )
         func_plots = VGroup(free_fall_speed_func_plot, free_fall_dist_func_plot)
 
-        VGroup(speed_graphic, func_plots).shift(RIGHT * 2.5)
+        VGroup(number_plane, func_plots).to_edge(RIGHT)
 
         # Вывод
         # Сдвиг/маштабирование мяча
-        self.play(tennis_ball.animate.shift(UP * 3 + LEFT * 5))
-        self.play(tennis_ball.animate.scale(0.4))
+        scale_factor = 0.4
+        self.play(tennis_ball.animate.to_corner(UL))
+        self.play(tennis_ball.animate.scale(scale_factor))
         self.wait()
         # График скорости
-        self.play(Create(speed_graphic, lag_ratio=0.5), run_time=4)
+        self.play(Create(number_plane, lag_ratio=0.5), run_time=4)
         self.wait()
         # Падение
-        animate_free_fall(
-            falling_mobject=tennis_ball,
-            duration=duration,
-            cam_zoom=0.4,
-            parallel_anim_mobjects=func_plots,
-        )
+        self.play(Create(func_plots, lag_ratio=0, run_time=duration, rate_func=linear), AnimateFreeFall(tennis_ball, duration, cam_zoom=scale_factor))
         # Очистка
-        self.play(Uncreate(VGroup(*[func_plots, tennis_ball, speed_graphic]), lag_ration=0), run_time=4)
+        self.play(
+            Uncreate(VGroup(*[func_plots, tennis_ball, number_plane]), lag_ration=0),
+            run_time=4,
+        )
         self.wait()
 
 
 class Equation(Scene):
     def construct(self):
         font_size = 80
-        gravity_text = Tex(r"$g=9.8\frac{m}{s^2}$", font_size=font_size, tex_template = standart_tex_template)
-        speed_text = Tex(r"$v=g*t$", font_size=font_size, tex_template = standart_tex_template)
-        dist_text = Tex(r"$s=g*t^{2}*0.5$", font_size=font_size, tex_template=standart_tex_template)
+        gravity_text = Tex(
+            r"$g=9.8\frac{m}{s^2}$",
+            font_size=font_size,
+        )
+        speed_text = Tex(r"$v=g*t$", font_size=font_size)
+        dist_text = Tex(r"$s=g*t^{2}*0.5$", font_size=font_size)
         self.play(Write(gravity_text))
         self.wait()
         self.play(gravity_text.animate.shift(UP * 2), Write(speed_text))
@@ -252,12 +205,19 @@ class Equation(Scene):
 class NonGravity(Scene):
     def construct(self):
         # Земля
-        planet = Circle(radius=config.frame_height / 2 - 2, color=GREEN, fill_color=GREEN, fill_opacity=0.25)
+        planet = Circle(
+            radius=config.frame_height / 2 - 2,
+            color=GREEN,
+            fill_color=GREEN,
+            fill_opacity=0.25,
+        )
         self.play(Create(planet))
         self.wait()
         self.play(planet.animate.scale(10).shift(DOWN * (planet.radius * 10 + 3)))
         self.wait()
         # Мяч
-        tennis_ball = TennisBall(radius=0.2, fill_color=RED, stroke_width=5).shift(UP * 2)
+        tennis_ball = TennisBall(radius=0.2, fill_color=RED, stroke_width=5).shift(
+            UP * 2
+        )
         self.play(Create(tennis_ball))
         self.wait()
