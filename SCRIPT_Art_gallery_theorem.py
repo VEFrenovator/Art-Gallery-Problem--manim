@@ -82,8 +82,7 @@ class SubthemeHandler:
         включении нового.
         """
         if len(self.current_out_texts) == 0:
-            raise ValueError("""There is not any created subthemes, so init is
-impossible. Try func 'update_subtheme' at first.""")
+            self.update_subtheme(scene)
 
         scene.add(*[*self.current_out_texts.values(), *self.current_out_lines.values()])
 
@@ -211,18 +210,14 @@ impossible. Try func 'update_subtheme' at first.""")
 global_subtheme_handler = SubthemeHandler()
 
 # Русский шрифт
-rus_text_template = TexTemplate()
-rus_text_template.add_to_preamble(
-    r"""
-    \usepackage{polyglossia}
-    \setmainlanguage{russian}
-    \usepackage{fontspec}
-    \setmainfont{Times New Roman}    
-"""
+rus_text_template = TexTemplate(
+    tex_compiler="xelatex",
+    output_format=".xdv",
+    preamble=r"""\usepackage{polyglossia}
+\setmainlanguage{russian}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}"""
 )
-rus_text_template.tex_compiler = "xelatex"
-rus_text_template.output_format = ".xdv"
-
 
 class Greetings(Scene):
     """
@@ -270,6 +265,12 @@ class ProblemDescription(Scene):
     В течении действия рассказываю о сути проблемы.
     """
 
+    def len_of_two_dim_list(self, list: list) -> int:
+        ans = 0
+        for row in list:
+            ans += len(row)
+        return ans
+
     # ОХРАННИК
     def is_segment_inside_polygon(self, segment: Line, polygon: Polygon) -> bool:
         """
@@ -296,44 +297,60 @@ class ProblemDescription(Scene):
         ПРИМЕЧАНИЕ. Не анимирует многоугольник.
         """
 
-        view_points_coords = []
-        gallery_corners = gallery.get_vertices()
+        view_points_coords = [] # Массив координат видимых точек
+        gallery_corners = gallery.get_vertices()    # Массив вершин галереи
+        incoherent_view_points = []
 
-        # Проверяем, внутри ли галереи охранник
+        # Создаём shapely-классы
         shapely_guard = ShapelyPoint(*guard.get_center()[:2])
         shapely_gallery = ShapelyPolygon([tuple(p)[:2] for p in gallery_corners])
 
+        # Проверяем, внутри ли галереи охранник. Если нет, возвращаем ошибку
         if not shapely_gallery.covers(shapely_guard):
             raise ValueError(f"Guard (coords = {guard.get_center()}) not in gallery")
 
-        # Проверяем, видит ли точку охранник
-        for wall_angle in gallery_corners:
+        # Проверяем, видит ли охранник вершину галереи. Для этого перебираем все вершины
+        view_points_stop_i = len(gallery_corners)
+        wall_angle_i = -1
+        while wall_angle_i < view_points_stop_i:
+            wall_angle_i += 1
+            wall_angle_i %= len(gallery_corners)
+            wall_angle = gallery_corners[wall_angle_i]
+            # Если линия (help_line) от охранника до вершины внутри многоугольника, значит
+            # вершина видна
             help_line = Line(guard.get_center(), wall_angle)
-
-            # Проверяем, видит ли охранник точку
             if self.is_segment_inside_polygon(help_line, gallery):
-                view_points_coords.append(wall_angle)
 
-                # Проверяем, видит ли охранник точку за углом (проверяем
-                # для всех углов, даже меньше 180)
+                # Если вершина видна, сначала добавляем её в локальный массив. Мы не
+                # добавляем её сразу в view_points_coords потому, что за ней
+                # может быть ещё одна видимая точка и тогда нужно правильно указать
+                # порядок обхода, вычисления которого нужно производить после
+                # нахождение этой самой второй точки.
+                incoherent_view_points = [wall_angle]
+
+                # Следующие шаги посвещены нахождению точки "за углом"
+                # Шаг 1. Продлеваем help_line на расстояние диагонали bounding box
+                # Шаг 1.1. Находим координаты bounding box с помощью метода bounds (bbox_coords)
                 bbox_coord = shapely_gallery.bounds
+                # и его диагонать (max_calc_dist) по Теореме пифагора
                 bb_dx = bbox_coord[2] - bbox_coord[0]
                 bb_dy = bbox_coord[3] - bbox_coord[1]
                 max_calc_dist = math.sqrt(
                     bb_dx**2 + bb_dy**2
-                )  # Диагональ ограничевающего прямоугольника галереи
+                )
 
-                # Продлеваем отрезок зрения охраника
+                # Шаг 1.2. Продлеваем help_line
                 start = help_line.get_start()
                 end = help_line.get_end()
                 direct = end - start
                 new_end = start + abs(max_calc_dist) * direct
-
+                # +создаём shapely-класс
                 shapely_help_line = LineString([start, new_end])
 
-                # Ищем пересечения с многоугольником
+                # Шаг 2. Ищем пересечения с многоугольником
                 intersection = shapely_gallery.boundary.intersection(shapely_help_line)
 
+                # Шаг 3. Трансформируем все найденные точки пересечения в массив (ips)
                 if not intersection.is_empty:
                     match intersection.geom_type:
                         case "Point":
@@ -342,14 +359,61 @@ class ProblemDescription(Scene):
                             ips = list(intersection.geoms)
                         case _:
                             ips = []
-
+                    # Шаг 4. Обрабатываем каждую точку пересечения (иными словами проверяем,
+                    # видит ли её охранник)
                     for ip in ips:
                         x, y = ip.coords[0][:2]
                         possible = [x, y, 0]
                         if self.is_segment_inside_polygon(
                             Line(guard.get_center(), possible), gallery
                         ):
-                            view_points_coords.append(possible)
+                            incoherent_view_points.append(possible)
+
+            # Теперь обрабатываем incoherent_view_points
+
+            if self.len_of_two_dim_list:
+                # Если видна 1 вершина или ни одна - просто добавляем, потом отчищаем.
+                # В этом случае порядок обхода не имеет значения
+                view_points_coords.append(incoherent_view_points)
+                incoherent_view_points.clear()
+                print("Hello!")
+                print()
+            
+            elif len(incoherent_view_points) == 2 and self.len_of_two_dim_list(view_points_coords) > 0:
+                # Если созданы две вершины, тогда:
+                pa = LineString([view_points_coords[-1], incoherent_view_points[1]])
+                both_vg = [
+                    LineString(
+                        [
+                            incoherent_view_points[0],
+                            gallery_corners[wall_angle_i - 1],
+                        ]
+                    ),
+                    LineString(
+                        [
+                            incoherent_view_points[0],
+                            gallery_corners[wall_angle_i + 1],
+                        ]
+                    ),
+                ]
+                # Если отрезок PA *не* пересекает один из отрезков VG порядок обхода A->V
+                if pa.intersection(both_vg[0]).is_empty or pa.intersection(both_vg[1]):
+                    view_points_coords.append(incoherent_view_points[-1])
+                    incoherent_view_points.clear()
+
+                # Если отрезок PA пересекает один из отрезков VG, порядок обхода V->A
+                else:
+                    view_points_coords.append(incoherent_view_points)
+                    incoherent_view_points.clear()
+
+                # Примачание:
+                # P (Previous visible) - последний элемент view_points_coords
+                # V (polygon's Visible) - видимая точка, являющаяся вершиной галереи
+                # A (polygon's Additive) - новая поставленная точка
+                # [Пара точек] G (gallery) - две вершины галереи, имеющие свясь с точкой V
+            else:
+                incoherent_view_points.clear()
+                view_points_stop_i += 1
 
         # Возврат
         if len(view_points_coords) < 3:
@@ -434,60 +498,43 @@ class ProblemDescription(Scene):
 
         # Мерцание вершин
         for _ in range(2):
-            self.play(
-                AnimationGroup(
-                    *[
-                        dot.animate.set_color(YELLOW_E).scale(2.5)
-                        for dot in polygon_dots_list
-                    ],
-                    run_time=1,
-                )
-            )
-
-            self.play(
-                AnimationGroup(
-                    *[
-                        dot.animate.set_color(WHITE).scale(1 / 2.5)
-                        for dot in polygon_dots_list
-                    ],
-                    run_time=1,
-                )
-            )
-
+            self.play(AnimationGroup(Indicate(polygon_dot, scale_factor=2, lag_ratio=0) for polygon_dot in polygon_dots_list))
             self.wait(0.25)
-        # Отрисовка охранника
-        guard = Dot([-0.5, 0, 0], 0.12, color=PURE_RED)
-        self.play(Create(guard))
 
+        # Отрисовка охранника
+        guard = Dot([-0.5, 0, 0], 0.12, color=RED)
+        self.play(Create(guard))
         self.wait()
 
-        self.add(self.create_guard_view(guard, polygon).set_fill(GREEN, 0.75))
+        # Отрисовка поля зрения
+        guard_view = self.create_guard_view(guard, polygon).set_z_index(-1).set_fill(GREEN, 0.75)
+        self.play(GrowFromPoint(guard_view, guard))
+        self.wait()
 
-"""
-                for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
-                    wall_start = v
-                    wall_end = gallery_corners[i % len(gallery_corners)]
-                    if wall_start != wall_angle and wall_end != wall_angle:
-                        wall = LineString([wall_start, wall_end])
+
+#                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
+#                     wall_start = v
+#                     wall_end = gallery_corners[i % len(gallery_corners)]
+#                     if wall_start != wall_angle and wall_end != wall_angle:
+#                         wall = LineString([wall_start, wall_end])
                         
-                        common_point = wall.intersection(guard_view_shapely_line)
-                        if not common_point.is_empty and:   # Точка пересечение - нужная точка
+#                         common_point = wall.intersection(guard_view_shapely_line)
+#                         if not common_point.is_empty and:   # Точка пересечение - нужная точка
 
-                            view_points_coords.append(common_point)
-                            break   # Точка персечения единственна, птому останавливаем цикл
-"""
-"""
+#                             view_points_coords.append(common_point)
+#                             break   # Точка персечения единственна, птому останавливаем цикл
+
                 
-                guard_view_shapely_line = LineString(
-                    [
-                        shapely_guard.coords[0],
-                        shapely_scale(
-                            geom=shapely_guard,
-                            xfact=max_calc_dist,
-                            yfact=max_calc_dist,
-                            origin=shapely_guard.coords[0],
-                        ).coords[0],
-                    ]
-                )
-"""
-"""from shapely.affinity import scale as shapely_scale"""
+#                 guard_view_shapely_line = LineString(
+#                     [
+#                         shapely_guard.coords[0],
+#                         shapely_scale(
+#                             geom=shapely_guard,
+#                             xfact=max_calc_dist,
+#                             yfact=max_calc_dist,
+#                             origin=shapely_guard.coords[0],
+#                         ).coords[0],
+#                     ]
+#                 )
+
+# from shapely.affinity import scale as shapely_scale

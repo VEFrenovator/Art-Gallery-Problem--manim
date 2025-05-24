@@ -127,8 +127,16 @@ class Greetings(Scene):
 
 class AccelerationOfFreeFall(Scene):
     def construct(self):
-        # Мяч
+        # МЯЧ
+        # Тело + трасер
         tennis_ball = TennisBall(radius=0.45, fill_color=RED, stroke_width=6.0)
+        tennis_ball_traced_path = TracedPath(
+            tennis_ball.get_center,
+            stroke_width=tennis_ball.body.radius * 100,
+            stroke_color=tennis_ball.body.color,
+            stroke_opacity=[1, 0],
+            dissipating_time=0.25,
+        )
 
         # Показ мяча
         self.wait()
@@ -137,10 +145,11 @@ class AccelerationOfFreeFall(Scene):
         self.play(tennis_ball.animate.to_edge(config.top))
         self.wait()
 
-        # Свободное падение No. 1
+        # СВОБОДНОЕ ПАДЕНИЕ № 1
         self.play(AnimateFreeFall(falling_mobject=tennis_ball, duration=5))
+        self.play(tennis_ball.animate.move_to(ORIGIN))
 
-        # Свободное падение No. 2
+        # СВОБОДНОЕ ПАДЕНИЕ № 2
         duration = 10
         # Числовая система
         number_plane = NumberPlane(
@@ -150,7 +159,8 @@ class AccelerationOfFreeFall(Scene):
             y_length=config.frame_height - (DEFAULT_MOBJECT_TO_EDGE_BUFFER * 2),
             faded_line_style={"stroke_color": WHITE},
             background_line_style={"stroke_color": ORANGE, "stroke_opacity": 0.5},
-            axis_config = {"include_numbers": True},
+            axis_config={"include_numbers": True},
+            tips=True
         )
 
         # Графики функций (plots)
@@ -174,7 +184,22 @@ class AccelerationOfFreeFall(Scene):
         self.play(Create(number_plane, lag_ratio=0.5), run_time=4)
         self.wait()
         # Падение
-        self.play(Create(func_plots, lag_ratio=0, run_time=duration, rate_func=linear), AnimateFreeFall(tennis_ball, duration, cam_zoom=scale_factor))
+        self.play(
+            Create(func_plots, lag_ratio=0, run_time=duration, rate_func=linear),
+            AnimateFreeFall(tennis_ball, duration, cam_zoom=scale_factor),
+        )
+        self.wait()
+        # Выделение графиков
+        for _ in range(2):
+            self.play(Indicate(func_plots))
+            self.wait(0.25)
+        # Подъём
+        self.play(
+            Uncreate(func_plots),
+            tennis_ball.animate.to_edge(LEFT),
+            run_time=5,
+            lag_ration=0,
+        )
         # Очистка
         self.play(
             Uncreate(VGroup(*[func_plots, tennis_ball, number_plane]), lag_ration=0),
