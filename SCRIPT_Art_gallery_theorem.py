@@ -7,11 +7,12 @@ shapely: Продвинутая геометрии библиотека. Исп�
 
 import math
 from manim import *
-from shapely.geometry import (
+from shapely import (
+    LineString,
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
-    LineString,
 )
+
 
 
 class SubthemeHandler:
@@ -205,7 +206,6 @@ class SubthemeHandler:
         # Если никакой из if не сработал, значит есть ошибка проверки
         raise RuntimeError("update_subtheme func didn't decide IF-block to make return")
 
-
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
 
@@ -247,7 +247,6 @@ class Greetings(Scene):
         self.play(AnimationGroup(Unwrite(text_out_group), lag_ratio=out_lag_ratio))
         self.wait()
 
-
 class TableOfContents(Scene):
     def construct(self):
         out_lines = []
@@ -265,166 +264,106 @@ class ProblemDescription(Scene):
     В течении действия рассказываю о сути проблемы.
     """
 
-    def len_of_two_dim_list(self, list: list) -> int:
-        ans = 0
-        for row in list:
-            ans += len(row)
-        return ans
-
-    # ОХРАННИК
-    def is_segment_inside_polygon(self, segment: Line, polygon: Polygon) -> bool:
+    def _angle_and_dist(self, observer, point):
         """
-        Функция определяет, лежит ли отрезок внутри многоугольника (даже если
-        отрезок касается вершин многоугольника).
+        Возвращает пару (angle, dist2) от observer к point:
+        - angle  — угол в радианах (atan2),
+        - dist2  — квадрат евклидова расстояния.
         """
+        dx = point[0] - observer[0]
+        dy = point[1] - observer[1]
+        return math.atan2(dy, dx), dx*dx + dy*dy
 
-        # Преобразуем manim Polygon в список координат
-        poly_coords = [tuple(p)[:2] for p in polygon.get_vertices()]
-        shapely_poly = ShapelyPolygon(poly_coords)
+    def _build_edges(self, polygon):
+        """Возвращает список Shapely LineString-ребер для заданного списка вершин."""
+        edges = []
+        n = len(polygon)
+        for i in range(n):
+            a = polygon[i]
+            b = polygon[(i+1) % n]
+            edges.append(LineString([a, b]))
+        return edges
 
-        # Преобразуем manim Line в shapely LineString
-        seg_coords = [tuple(segment.get_start())[:2], tuple(segment.get_end())[:2]]
-        shapely_line = LineString(seg_coords)
-
-        # Проверим, лежит ли отрезок строго внутри полигона (без касания границы)
-        # contains проверяет, что вся геометрия строго внутри без касаний границы
-        return shapely_poly.contains(shapely_line)
-
-    def create_guard_view(self, guard: Dot, gallery: Polygon) -> Polygon:
+    def _cast_ray(self, observer, angle, edges, max_dist=1e6):
         """
-        Функция, рассчитывающая поле зрения охранника внутри галереи и возвращающая
-        это поле зрения в качестве многоугольника.
-        ПРИМЕЧАНИЕ. Не анимирует многоугольник.
+        Стреляет лучом из observer под углом angle, 
+        возвращает координаты ближайшего пересечения с edges или None.
         """
+        ox, oy = observer
+        dx = math.cos(angle)
+        dy = math.sin(angle)
+        far = (ox + dx * max_dist, oy + dy * max_dist)
+        ray = LineString([observer, far])
 
-        view_points_coords = [] # Массив координат видимых точек
-        gallery_corners = gallery.get_vertices()    # Массив вершин галереи
-        incoherent_view_points = []
+        closest_pt = None
+        min_dist2 = float('inf')
+        for edge in edges:
+            inter = ray.intersection(edge)
+            if inter.is_empty:
+                continue
+            # Могут быть MultiPoint, обрабатываем все
+            points = inter.geoms if hasattr(inter, 'geoms') else [inter]
+            for p in points:
+                d2 = (p.x - ox)**2 + (p.y - oy)**2
+                if d2 < min_dist2:
+                    min_dist2 = d2
+                    closest_pt = (p.x, p.y)
+        return closest_pt
 
-        # Создаём shapely-классы
-        shapely_guard = ShapelyPoint(*guard.get_center()[:2])
-        shapely_gallery = ShapelyPolygon([tuple(p)[:2] for p in gallery_corners])
+    def compute_visibility(
+            self,
+            polygon: list[tuple[float, float]] | Polygon,
+            observer: tuple[float, float] | Dot,
+            epsilon=1e-8,
+        ):
+        """
+        Возвращает список вершин полигона видимости из observer внутри polygon.
 
-        # Проверяем, внутри ли галереи охранник. Если нет, возвращаем ошибку
-        if not shapely_gallery.covers(shapely_guard):
-            raise ValueError(f"Guard (coords = {guard.get_center()}) not in gallery")
+        epsilon  — угол отклонения для «щелей» (по умолчанию 1e-8).
+        """
+        # 0) Проверяем классы
+        if polygon is Polygon:
+            polygon = [tuple(coords[:2]) for coords in polygon.get_vertices()]
+        if observer is Dot:
+            observer = tuple(observer.get_center()[:2])
+        
+        # Проверяем, что охранник внутри галерее
+        if not ShapelyPoint(observer).covered_by(ShapelyPolygon(p)):
+            raise ValueError(f"Guard with coords {observer} is not in gallery")
 
-        # Проверяем, видит ли охранник вершину галереи. Для этого перебираем все вершины
-        view_points_stop_i = len(gallery_corners)
-        wall_angle_i = -1
-        while wall_angle_i < view_points_stop_i:
-            wall_angle_i += 1
-            wall_angle_i %= len(gallery_corners)
-            wall_angle = gallery_corners[wall_angle_i]
-            # Если линия (help_line) от охранника до вершины внутри многоугольника, значит
-            # вершина видна
-            help_line = Line(guard.get_center(), wall_angle)
-            if self.is_segment_inside_polygon(help_line, gallery):
+        # 1) Собираем все уникальные углы к вершинам
+        base_angles = set()
+        for p in polygon:
+            ang, _ = self._angle_and_dist(observer, p)
+            base_angles.add(ang)
 
-                # Если вершина видна, сначала добавляем её в локальный массив. Мы не
-                # добавляем её сразу в view_points_coords потому, что за ней
-                # может быть ещё одна видимая точка и тогда нужно правильно указать
-                # порядок обхода, вычисления которого нужно производить после
-                # нахождение этой самой второй точки.
-                incoherent_view_points = [wall_angle]
+        # 2) Генерируем «расщеплённые» углы
+        angles = []
+        for ang in base_angles:
+            angles.extend((ang - epsilon, ang, ang + epsilon))
 
-                # Следующие шаги посвещены нахождению точки "за углом"
-                # Шаг 1. Продлеваем help_line на расстояние диагонали bounding box
-                # Шаг 1.1. Находим координаты bounding box с помощью метода bounds (bbox_coords)
-                bbox_coord = shapely_gallery.bounds
-                # и его диагонать (max_calc_dist) по Теореме пифагора
-                bb_dx = bbox_coord[2] - bbox_coord[0]
-                bb_dy = bbox_coord[3] - bbox_coord[1]
-                max_calc_dist = math.sqrt(
-                    bb_dx**2 + bb_dy**2
-                )
+        # 3) Строим ребра и «стреляем» всеми лучами
+        edges = self._build_edges(polygon)
+        hits = []
+        for ang in angles:
+            pt = self._cast_ray(observer, ang, edges)
+            if pt is not None:
+                hits.append((ang, pt))
 
-                # Шаг 1.2. Продлеваем help_line
-                start = help_line.get_start()
-                end = help_line.get_end()
-                direct = end - start
-                new_end = start + abs(max_calc_dist) * direct
-                # +создаём shapely-класс
-                shapely_help_line = LineString([start, new_end])
+        # 4) Дедуплицируем по углу, оставляя ближайшую точку
+        nearest = {}
+        for ang, pt in hits:
+            _, d2 = self._angle_and_dist(observer, pt)
+            if ang not in nearest or d2 < self._angle_and_dist(observer, nearest[ang])[1]:
+                nearest[ang] = pt
 
-                # Шаг 2. Ищем пересечения с многоугольником
-                intersection = shapely_gallery.boundary.intersection(shapely_help_line)
-
-                # Шаг 3. Трансформируем все найденные точки пересечения в массив (ips)
-                if not intersection.is_empty:
-                    match intersection.geom_type:
-                        case "Point":
-                            ips = [intersection]
-                        case "MultiPoint":
-                            ips = list(intersection.geoms)
-                        case _:
-                            ips = []
-                    # Шаг 4. Обрабатываем каждую точку пересечения (иными словами проверяем,
-                    # видит ли её охранник)
-                    for ip in ips:
-                        x, y = ip.coords[0][:2]
-                        possible = [x, y, 0]
-                        if self.is_segment_inside_polygon(
-                            Line(guard.get_center(), possible), gallery
-                        ):
-                            incoherent_view_points.append(possible)
-
-            # Теперь обрабатываем incoherent_view_points
-
-            if self.len_of_two_dim_list:
-                # Если видна 1 вершина или ни одна - просто добавляем, потом отчищаем.
-                # В этом случае порядок обхода не имеет значения
-                view_points_coords.append(incoherent_view_points)
-                incoherent_view_points.clear()
-                print("Hello!")
-                print()
-            
-            elif len(incoherent_view_points) == 2 and self.len_of_two_dim_list(view_points_coords) > 0:
-                # Если созданы две вершины, тогда:
-                pa = LineString([view_points_coords[-1], incoherent_view_points[1]])
-                both_vg = [
-                    LineString(
-                        [
-                            incoherent_view_points[0],
-                            gallery_corners[wall_angle_i - 1],
-                        ]
-                    ),
-                    LineString(
-                        [
-                            incoherent_view_points[0],
-                            gallery_corners[wall_angle_i + 1],
-                        ]
-                    ),
-                ]
-                # Если отрезок PA *не* пересекает один из отрезков VG порядок обхода A->V
-                if pa.intersection(both_vg[0]).is_empty or pa.intersection(both_vg[1]):
-                    view_points_coords.append(incoherent_view_points[-1])
-                    incoherent_view_points.clear()
-
-                # Если отрезок PA пересекает один из отрезков VG, порядок обхода V->A
-                else:
-                    view_points_coords.append(incoherent_view_points)
-                    incoherent_view_points.clear()
-
-                # Примачание:
-                # P (Previous visible) - последний элемент view_points_coords
-                # V (polygon's Visible) - видимая точка, являющаяся вершиной галереи
-                # A (polygon's Additive) - новая поставленная точка
-                # [Пара точек] G (gallery) - две вершины галереи, имеющие свясь с точкой V
-            else:
-                incoherent_view_points.clear()
-                view_points_stop_i += 1
-
-        # Возврат
-        if len(view_points_coords) < 3:
-            raise ValueError(
-                f"Need at least 3 coords to create a Polygon, has {len(view_points_coords)}."
-            )
-        return Polygon(*view_points_coords)
+        # 5) Сортируем по углу и возвращаем только точки
+        result = [nearest[ang] for ang in sorted(nearest)]
+        return result
 
     def construct(self):
         # ПОДТЕМА
-        global_subtheme_handler.update_subtheme(self)
+        # global_subtheme_handler.update_subtheme(self)
 
         # МНОГОУГОЛЬНИК
         # Множители маштаба
@@ -507,7 +446,16 @@ class ProblemDescription(Scene):
         self.wait()
 
         # Отрисовка поля зрения
-        guard_view = self.create_guard_view(guard, polygon).set_z_index(-1).set_fill(GREEN, 0.75)
+
+        
+        guard_view_coords = self.compute_visibility(polygon, guard)
+        guard_view = Polygon(
+            *[(x, y, 0) for x, y in guard_view_coords],
+            stroke_opacity=0,
+            fill_color=GREEN,
+            fill_opacity=1,
+            z_index=-1,
+        )
         self.play(GrowFromPoint(guard_view, guard))
         self.wait()
 
