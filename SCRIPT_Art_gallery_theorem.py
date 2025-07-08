@@ -14,7 +14,6 @@ from shapely import (
 )
 
 
-
 class SubthemeHandler:
     """
     Класс для анимационной смены подтем.
@@ -27,39 +26,59 @@ class SubthemeHandler:
         # Примечание: если подтем более низкого уровня нет, массив объявляется пустым.
 
         self.subtheme_variants = [
-            ["Введение", [
-                ["Формулировка", []],
-                ["Некоторые очевидные выводы", []]
-            ]],
-            ["Решение Стива Фиска", [
-                ["Триангуляция", [
-                    ["Жадный алгоритм", []],
-                    ["Триангуляция выпуклого многоугольника", []],
-                    ["Метод отрезания ушей", [
-                        ["Некоторые определения", []],
-                        ["Некоторые теоремы", [
-                            ["Триангуляционная теорема", []],
-                            ["Теорема о двух ушах", []]
-                        ]],
-                        ["Алгоритм нахождения уха и оценка вычислительной сложности", []],
-                        ["Алгоритм триангуляции и оценка вычислительной сложности", []],
-                        ["Вывод о методе триангуляции путём отрезания ушей", []]
-                    ]]
-                ]],
-                ["Раскраска вершин", []],
-                ["Остатки от деления", []],
-                ["Вывод о решении Стива Фикса", []]
-            ]],
-            ["Заключение и напутствие", []]
+            ["Введение", [["Формулировка", []], ["Некоторые очевидные выводы", []]]],
+            [
+                "Решение Стива Фиска",
+                [
+                    [
+                        "Триангуляция",
+                        [
+                            ["Жадный алгоритм", []],
+                            ["Триангуляция выпуклого многоугольника", []],
+                            [
+                                "Метод отрезания ушей",
+                                [
+                                    ["Некоторые определения", []],
+                                    [
+                                        "Некоторые теоремы",
+                                        [
+                                            ["Триангуляционная теорема", []],
+                                            ["Теорема о двух ушах", []],
+                                        ],
+                                    ],
+                                    [
+                                        "Алгоритм нахождения уха и оценка вычислительной сложности",
+                                        [],
+                                    ],
+                                    [
+                                        "Алгоритм триангуляции и оценка вычислительной сложности",
+                                        [],
+                                    ],
+                                    [
+                                        "Вывод о методе триангуляции путём отрезания ушей",
+                                        [],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    ["Раскраска вершин", []],
+                    ["Остатки от деления", []],
+                    ["Вывод о решении Стива Фикса", []],
+                ],
+            ],
+            ["Заключение и напутствие", []],
         ]
 
         # Дерево subtheme_variants, но развёрнутое в список путей (pre-order)
-        self.flat_paths = [] # Список путей в кортежах (путь, название)
+        self.flat_paths = []  # Список путей в кортежах (путь, название)
         self._unpack(self.subtheme_variants, [])
         self.sequence = -1  # Номер подтемы в flat_path
 
-        self.current_out_texts: dict[int, Text] = {} # {приоритет: текст}
-        self.current_out_lines: dict[int, Line] = {} # {приоритет: линия}. Примечание: линии
+        self.current_out_texts: dict[int, Text] = {}  # {приоритет: текст}
+        self.current_out_lines: dict[int, Line] = (
+            {}
+        )  # {приоритет: линия}. Примечание: линии
         # нет над 1-ым уровнем
 
     def _unpack(self, subtree: list, path) -> None:
@@ -102,7 +121,7 @@ class SubthemeHandler:
             # Вывод
             scene.play(
                 prev.animate.shift(LEFT * 2).set_opacity(0),
-                new.animate.shift(LEFT * 2).set_opacity(1)
+                new.animate.shift(LEFT * 2).set_opacity(1),
             )
             # Изменение переменных
             self.sequence += 1
@@ -125,8 +144,10 @@ class SubthemeHandler:
         # Если это первый вывод
         if self.sequence == -1:
             # Подготовка
-            top = scene.camera.frame_center[1] + scene.camera.frame_height / 2  # Смещение
-            new_out_text.move_to([0, top, 0] + UP * (1. - 0.125))
+            top = (
+                scene.camera.frame_center[1] + scene.camera.frame_height / 2
+            )  # Смещение
+            new_out_text.move_to([0, top, 0] + UP * (1.0 - 0.125))
             # Вывод
             scene.play(new_out_text.animate.shift(DOWN).set_opacity(1))
             # Перезапсь переменных
@@ -148,22 +169,20 @@ class SubthemeHandler:
             out_line = Line(
                 start=RIGHT * (buff_between_out_texts + 0.5),
                 end=LEFT * (buff_between_out_texts + 0.5),
-                stroke_width=DEFAULT_STROKE_WIDTH * 0.5
+                stroke_width=DEFAULT_STROKE_WIDTH * 0.5,
             ).next_to(
                 prev_out_text, DOWN, buff=buff_between_out_texts / 2
-            )   # manim класс
+            )  # manim класс
 
-            scene.play(Create(out_line))    # Вывод
-            self.current_out_lines[new_priority] = out_line # Обновление переменной
+            scene.play(Create(out_line))  # Вывод
+            self.current_out_lines[new_priority] = out_line  # Обновление переменной
 
             # Подготовка
             new_out_text.move_to(prev_out_text)
             # Вывод
             scene.play(
                 new_out_text.animate.next_to(
-                    prev_out_text,
-                    DOWN,
-                    buff=buff_between_out_texts
+                    prev_out_text, DOWN, buff=buff_between_out_texts
                 ).set_opacity(1)
             )
             # Обновление переменных
@@ -182,16 +201,14 @@ class SubthemeHandler:
         if new_priority < prev_priority:
             target_text = self.current_out_texts[new_priority]
             # Втягивание всех подтем более низкого уровня
-            for priority in sorted(
-                self.current_out_texts.keys(),
-                reverse=True
-            )[:prev_priority]:
+            for priority in sorted(self.current_out_texts.keys(), reverse=True)[
+                :prev_priority
+            ]:
                 if priority > new_priority:
                     line = self.current_out_lines.get(priority)
                     text = self.current_out_texts.get(priority)
                     scene.play(
-                        FadeOut(line),
-                        text.animate.move_to(target_text).set_opacity(0)
+                        FadeOut(line), text.animate.move_to(target_text).set_opacity(0)
                     )
                     if line:
                         del self.current_out_lines[priority]
@@ -206,6 +223,7 @@ class SubthemeHandler:
         # Если никакой из if не сработал, значит есть ошибка проверки
         raise RuntimeError("update_subtheme func didn't decide IF-block to make return")
 
+
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
 
@@ -216,8 +234,9 @@ rus_text_template = TexTemplate(
     preamble=r"""\usepackage{polyglossia}
 \setmainlanguage{russian}
 \usepackage{fontspec}
-\setmainfont{Times New Roman}"""
+\setmainfont{Times New Roman}""",
 )
+
 
 class Greetings(Scene):
     """
@@ -247,16 +266,18 @@ class Greetings(Scene):
         self.play(AnimationGroup(Unwrite(text_out_group), lag_ratio=out_lag_ratio))
         self.wait()
 
+
 class TableOfContents(Scene):
     def construct(self):
         out_lines = []
-        line = Tex("Table of Content", tex_template = rus_text_template)
+        line = Tex("Table of Content", tex_template=rus_text_template)
         for i, (path, _) in enumerate(global_subtheme_handler.flat_paths):
-            num_str = ".".join(str(i+1) for i in path)
+            num_str = ".".join(str(i + 1) for i in path)
             out_lines.append(num_str)
         self.play(Write(VGroup(Text(line for line in out_lines))))
         self.wait()
         self.play(Write())
+
 
 class ProblemDescription(Scene):
     """
@@ -272,7 +293,7 @@ class ProblemDescription(Scene):
         """
         dx = point[0] - observer[0]
         dy = point[1] - observer[1]
-        return math.atan2(dy, dx), dx*dx + dy*dy
+        return math.atan2(dy, dx), dx * dx + dy * dy
 
     def _build_edges(self, polygon):
         """Возвращает список Shapely LineString-ребер для заданного списка вершин."""
@@ -280,7 +301,7 @@ class ProblemDescription(Scene):
         n = len(polygon)
         for i in range(n):
             a = polygon[i]
-            b = polygon[(i+1) % n]
+            b = polygon[(i + 1) % n]
             edges.append(LineString([a, b]))
         return edges
 
@@ -294,18 +315,18 @@ class ProblemDescription(Scene):
         dy = math.sin(angle)
         # локальный сдвиг вдоль направления луча
         start = (ox + dx * delta, oy + dy * delta)
-        far   = (ox + dx * max_dist, oy + dy * max_dist)
+        far = (ox + dx * max_dist, oy + dy * max_dist)
         ray = LineString([start, far])
 
         closest_pt = None
-        min_d2 = float('inf')
+        min_d2 = float("inf")
         for edge in edges:
             inter = ray.intersection(edge)
             if inter.is_empty:
                 continue
-            points = inter.geoms if hasattr(inter, 'geoms') else [inter]
+            points = inter.geoms if hasattr(inter, "geoms") else [inter]
             for p in points:
-                d2 = (p.x - ox)**2 + (p.y - oy)**2
+                d2 = (p.x - ox) ** 2 + (p.y - oy) ** 2
                 if d2 < min_d2:
                     min_d2 = d2
                     closest_pt = (p.x, p.y)
@@ -324,22 +345,27 @@ class ProblemDescription(Scene):
 
         geom_type = geom.geom_type
 
-        if geom_type == 'Point':
+        if geom_type == "Point":
             # одиночная точка
             coords.append((geom.x, geom.y))
 
-        elif geom_type == 'LineString':
+        elif geom_type == "LineString":
             # линия — просто её координаты
             coords.extend(list(geom.coords))
 
-        elif geom_type == 'Polygon':
+        elif geom_type == "Polygon":
             # внешний контур
             coords.extend(list(geom.exterior.coords))
             # внутренние кольца (дыры)
             for interior in geom.interiors:
                 coords.extend(list(interior.coords))
 
-        elif geom_type in ('MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'):
+        elif geom_type in (
+            "MultiPoint",
+            "MultiLineString",
+            "MultiPolygon",
+            "GeometryCollection",
+        ):
             # любые коллекции — рекурсивно пробегаем по .geoms
             for part in geom.geoms:
                 coords.extend(self._get_all_coords(part))
@@ -351,11 +377,11 @@ class ProblemDescription(Scene):
         return coords
 
     def compute_visibility(
-            self,
-            polygon: list[tuple[float, float]] | Polygon,
-            observer: tuple[float, float] | Dot,
-            epsilon=1e-8,
-        ):
+        self,
+        polygon: list[tuple[float, float]] | Polygon,
+        observer: tuple[float, float] | Dot,
+        epsilon=1e-8,
+    ):
         """
         Возвращает список вершин полигона видимости из observer внутри polygon.
 
@@ -366,7 +392,7 @@ class ProblemDescription(Scene):
             polygon = [tuple(coords[:2]) for coords in polygon.get_vertices()]
         if isinstance(observer, Dot):
             observer = tuple(observer.get_center()[:2])
-        
+
         # Проверяем, что охранник внутри галерее
         # if not ShapelyPoint(observer).covered_by(ShapelyPolygon(p)):
         #     raise ValueError(f"Guard with coords {observer} is not in gallery")
@@ -394,17 +420,20 @@ class ProblemDescription(Scene):
         nearest = {}
         for ang, pt in hits:
             _, d2 = self._angle_and_dist(observer, pt)
-            if ang not in nearest or d2 < self._angle_and_dist(observer, nearest[ang])[1]:
+            if (
+                ang not in nearest
+                or d2 < self._angle_and_dist(observer, nearest[ang])[1]
+            ):
                 nearest[ang] = pt
 
         # 5) Сортируем по углу
         result = [nearest[ang] for ang in sorted(nearest)]
 
         # Берем пересечение
-        result = ShapelyPolygon(polygon).intersection(ShapelyPolygon(result))
+        # result = ShapelyPolygon(polygon).intersection(ShapelyPolygon(result))
 
         # Возврат
-        return self._get_all_coords(result)
+        return result
 
     def construct(self):
         # ПОДТЕМА
@@ -504,8 +533,13 @@ class ProblemDescription(Scene):
             Succession(
                 Create(line_of_sight),
                 Add(line_of_sight_trace),
-                Rotate(line_of_sight, angle=360 * DEGREES * 2, about_point=line_of_sight.get_start(), run_time=3),
-                Wait(line_of_sight_trace.dissipating_time)
+                Rotate(
+                    line_of_sight,
+                    angle=360 * DEGREES * 2,
+                    about_point=line_of_sight.get_start(),
+                    run_time=3,
+                ),
+                Wait(line_of_sight_trace.dissipating_time),
             )
         )
         self.remove(line_of_sight, line_of_sight_trace)
@@ -527,19 +561,30 @@ class ProblemDescription(Scene):
         self.wait()
 
         # Движение охранника
-        guard_view.add_updater(lambda mobj: mobj.set_points_as_corners([(x, y, 0) for x, y in self.compute_visibility(polygon, guard)]))
-        self.play(
-            Succession(
-                guard.animate.next_to(polygon_dots_list[0], direction=DOWN),
-                guard.animate.next_to(polygon_dots_list[-1], direction=DOWN * LEFT),
-                lag_ratio=1,
+        guard_view.add_updater(
+            lambda mobj: mobj.set_points_as_corners(
+                [(x, y, 0) for x, y in self.compute_visibility(polygon, guard)]
             )
         )
+        path = VMobject(fill_opacity=0).set_points_smoothly(
+            [
+                guard.get_center(),
+                polygon_dots_list[0].get_center() + DOWN * 0.5,
+                polygon_dots_list[-8].get_center() + RIGHT * 0.5 + UP,
+            ]
+        )
+        self.play(MoveAlongPath(guard, path, run_time=5, rate_func=smooth))
         guard_view.clear_updaters()
+        self.wait()
 
         # Мерцание вершин
         for _ in range(2):
-            self.play(AnimationGroup(Indicate(polygon_dot, scale_factor=2, lag_ratio=0) for polygon_dot in polygon_dots_list))
+            self.play(
+                AnimationGroup(
+                    Indicate(polygon_dot, scale_factor=2, color=ORANGE, lag_ratio=0)
+                    for polygon_dot in polygon_dots_list
+                )
+            )
             self.wait(0.25)
         self.wait()
 
