@@ -251,7 +251,7 @@ class TableOfContents(Scene):
     def construct(self):
         out_lines = []
         line = Tex("Table of Content", tex_template = rus_text_template)
-        for i, (path, name) in enumerate(global_subtheme_handler.flat_paths):
+        for i, (path, _) in enumerate(global_subtheme_handler.flat_paths):
             num_str = ".".join(str(i+1) for i in path)
             out_lines.append(num_str)
         self.play(Write(VGroup(Text(line for line in out_lines))))
@@ -284,31 +284,71 @@ class ProblemDescription(Scene):
             edges.append(LineString([a, b]))
         return edges
 
-    def _cast_ray(self, observer, angle, edges, max_dist=1e6):
+    def _cast_ray(self, observer, angle, edges, max_dist=1e6, delta=1e-6):
         """
-        Стреляет лучом из observer под углом angle, 
-        возвращает координаты ближайшего пересечения с edges или None.
+        Стреляет лучом, начало которого сдвинуто вдоль собственного направления на δ.
+        Это универсально защищает от граничных случаев.
         """
         ox, oy = observer
         dx = math.cos(angle)
         dy = math.sin(angle)
-        far = (ox + dx * max_dist, oy + dy * max_dist)
-        ray = LineString([observer, far])
+        # локальный сдвиг вдоль направления луча
+        start = (ox + dx * delta, oy + dy * delta)
+        far   = (ox + dx * max_dist, oy + dy * max_dist)
+        ray = LineString([start, far])
 
         closest_pt = None
-        min_dist2 = float('inf')
+        min_d2 = float('inf')
         for edge in edges:
             inter = ray.intersection(edge)
             if inter.is_empty:
                 continue
-            # Могут быть MultiPoint, обрабатываем все
             points = inter.geoms if hasattr(inter, 'geoms') else [inter]
             for p in points:
                 d2 = (p.x - ox)**2 + (p.y - oy)**2
-                if d2 < min_dist2:
-                    min_dist2 = d2
+                if d2 < min_d2:
+                    min_d2 = d2
                     closest_pt = (p.x, p.y)
+
         return closest_pt
+
+    def _get_all_coords(self, geom):
+        """
+        Рекурсивно обходит любую Shapely-геометрию и возвращает список
+        всех точек (x, y) из её компонентов.
+        """
+        coords = []
+
+        if geom.is_empty:
+            return coords
+
+        geom_type = geom.geom_type
+
+        if geom_type == 'Point':
+            # одиночная точка
+            coords.append((geom.x, geom.y))
+
+        elif geom_type == 'LineString':
+            # линия — просто её координаты
+            coords.extend(list(geom.coords))
+
+        elif geom_type == 'Polygon':
+            # внешний контур
+            coords.extend(list(geom.exterior.coords))
+            # внутренние кольца (дыры)
+            for interior in geom.interiors:
+                coords.extend(list(interior.coords))
+
+        elif geom_type in ('MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'):
+            # любые коллекции — рекурсивно пробегаем по .geoms
+            for part in geom.geoms:
+                coords.extend(self._get_all_coords(part))
+
+        else:
+            # на всякий случай
+            raise ValueError(f"Неожиданный тип геометрии: {geom_type}")
+
+        return coords
 
     def compute_visibility(
             self,
@@ -322,14 +362,14 @@ class ProblemDescription(Scene):
         epsilon  — угол отклонения для «щелей» (по умолчанию 1e-8).
         """
         # 0) Проверяем классы
-        if polygon is Polygon:
+        if isinstance(polygon, Polygon):
             polygon = [tuple(coords[:2]) for coords in polygon.get_vertices()]
-        if observer is Dot:
+        if isinstance(observer, Dot):
             observer = tuple(observer.get_center()[:2])
         
         # Проверяем, что охранник внутри галерее
-        if not ShapelyPoint(observer).covered_by(ShapelyPolygon(p)):
-            raise ValueError(f"Guard with coords {observer} is not in gallery")
+        # if not ShapelyPoint(observer).covered_by(ShapelyPolygon(p)):
+        #     raise ValueError(f"Guard with coords {observer} is not in gallery")
 
         # 1) Собираем все уникальные углы к вершинам
         base_angles = set()
@@ -357,9 +397,14 @@ class ProblemDescription(Scene):
             if ang not in nearest or d2 < self._angle_and_dist(observer, nearest[ang])[1]:
                 nearest[ang] = pt
 
-        # 5) Сортируем по углу и возвращаем только точки
+        # 5) Сортируем по углу
         result = [nearest[ang] for ang in sorted(nearest)]
-        return result
+
+        # Берем пересечение
+        result = ShapelyPolygon(polygon).intersection(ShapelyPolygon(result))
+
+        # Возврат
+        return self._get_all_coords(result)
 
     def construct(self):
         # ПОДТЕМА
@@ -427,62 +472,87 @@ class ProblemDescription(Scene):
 
         # Отрисовка многоугольника
         self.play(
-            AnimationGroup(
-                Create(polygon, run_time=3),
-                Create(polygon_dots_list, run_time=3),
-                lag_ratio=1,
+            LaggedStart(
+                Create(polygon_dots_list, run_time=3, rate_func=linear),
+                Create(polygon, run_time=3, rate_func=linear),
+                lag_ratio=0.1,
             )
         )
         self.wait()
+
+        # Отрисовка охранника
+        guard = Dot([-0.5, 0, 0], 0.12, color=RED, z_index=1)
+        self.play(GrowFromCenter(guard))
+        self.wait()
+
+        # Показ того, что он смотрит на 360
+        line_of_sight = Line(
+            start=guard.get_center(),
+            end=guard.get_center() + UP,
+            stroke_color=WHITE,
+            stroke_opacity=0,
+        )
+        line_of_sight_trace = TracedPath(
+            line_of_sight.get_center,
+            stroke_color=line_of_sight.get_stroke_color(),
+            stroke_width=line_of_sight.get_length() * 50,
+            stroke_opacity=1,
+            dissipating_time=0.25,
+        )
+
+        self.play(
+            Succession(
+                Create(line_of_sight),
+                Add(line_of_sight_trace),
+                Rotate(line_of_sight, angle=360 * DEGREES * 2, about_point=line_of_sight.get_start(), run_time=3),
+                Wait(line_of_sight_trace.dissipating_time)
+            )
+        )
+        self.remove(line_of_sight, line_of_sight_trace)
+        self.wait()
+
+        # Отрисовка поля зрения
+        guard_view_coords = self.compute_visibility(polygon, guard)
+        FOV_KWARGS = {
+            "stroke_opacity": 0,
+            "fill_color": GREEN,
+            "fill_opacity": 1,
+            "z_index": -1,
+        }
+        guard_view = Polygon(
+            *[(x, y, 0) for x, y in guard_view_coords],
+            **FOV_KWARGS,
+        )
+        self.play(GrowFromPoint(guard_view, guard))
+        self.wait()
+
+        # Движение охранника
+        guard_view.add_updater(lambda mobj: mobj.set_points_as_corners([(x, y, 0) for x, y in self.compute_visibility(polygon, guard)]))
+        self.play(
+            Succession(
+                guard.animate.next_to(polygon_dots_list[0], direction=DOWN),
+                guard.animate.next_to(polygon_dots_list[-1], direction=DOWN * LEFT),
+                lag_ratio=1,
+            )
+        )
+        guard_view.clear_updaters()
 
         # Мерцание вершин
         for _ in range(2):
             self.play(AnimationGroup(Indicate(polygon_dot, scale_factor=2, lag_ratio=0) for polygon_dot in polygon_dots_list))
             self.wait(0.25)
-
-        # Отрисовка охранника
-        guard = Dot([-0.5, 0, 0], 0.12, color=RED)
-        self.play(Create(guard))
         self.wait()
 
-        # Отрисовка поля зрения
+        # Перемещения охранника в угол
+        # self.play(guard.animate.move_to(polygon_dots_list[15].get_center()))
+        # guard_view_coords = self.compute_visibility(polygon, guard)
+        # self.play(Transform(guard_view, Polygon(
+        #     *[(x, y, 0) for x, y in guard_view_coords],
+        #     **FOV_KWARGS
+        # )))
+        # self.wait()
 
-        
-        guard_view_coords = self.compute_visibility(polygon, guard)
-        guard_view = Polygon(
-            *[(x, y, 0) for x, y in guard_view_coords],
-            stroke_opacity=0,
-            fill_color=GREEN,
-            fill_opacity=1,
-            z_index=-1,
-        )
-        self.play(GrowFromPoint(guard_view, guard))
-        self.wait()
+        # Создание новых охранников, которые полностью осматривают многоугольник
 
-
-#                 for i, v in enumerate(list(shapely_gallery.exterior.coords[:-1])):  # Перебор всех сторон многоугольник
-#                     wall_start = v
-#                     wall_end = gallery_corners[i % len(gallery_corners)]
-#                     if wall_start != wall_angle and wall_end != wall_angle:
-#                         wall = LineString([wall_start, wall_end])
-                        
-#                         common_point = wall.intersection(guard_view_shapely_line)
-#                         if not common_point.is_empty and:   # Точка пересечение - нужная точка
-
-#                             view_points_coords.append(common_point)
-#                             break   # Точка персечения единственна, птому останавливаем цикл
-
-                
-#                 guard_view_shapely_line = LineString(
-#                     [
-#                         shapely_guard.coords[0],
-#                         shapely_scale(
-#                             geom=shapely_guard,
-#                             xfact=max_calc_dist,
-#                             yfact=max_calc_dist,
-#                             origin=shapely_guard.coords[0],
-#                         ).coords[0],
-#                     ]
-#                 )
-
-# from shapely.affinity import scale as shapely_scale
+        # Удаление
+        # self.play(FadeOut(mobj for mobj in self.mobjects))
