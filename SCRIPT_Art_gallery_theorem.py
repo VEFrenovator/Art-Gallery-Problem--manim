@@ -1,17 +1,212 @@
-"""math: Базовая математическая библиотека;
+"""
+math: Базовая математическая библиотека;
 manim: Основная анимационная библиотека.
     Примечание. Не обращай внимания на Wildcard предупреждение.
     Если написать import manim, то это не будет соответсвовать документации
     manim;
-shapely: Продвинутая геометрии библиотека. Использую для нахождения пересечений."""
+shapely: Продвинутая геометрии библиотека. Использую для нахождения пересечений.
+"""
 
 import math
+from typing import Iterable, Tuple, List
 from manim import *
-from shapely import (
-    LineString,
+from shapely.geometry import (
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
+    LineString,
 )
+
+
+class Solution:
+    def calculate_visibility(
+        self,
+        polygon: Iterable[Iterable[float]] | Polygon | ShapelyPolygon,
+        observer: Iterable[float] | Dot | ShapelyPoint,
+    ) -> List[Tuple[float]]:
+
+        # Convert input to Shapely objects
+        if isinstance(polygon, Polygon):
+            polygon = ShapelyPolygon(polygon.get_vertices())
+        elif isinstance(polygon, Iterable):
+            polygon = ShapelyPolygon(polygon)
+
+        if isinstance(observer, Dot):
+            observer = ShapelyPoint(observer.get_center())
+        elif isinstance(observer, Iterable):
+            observer = ShapelyPoint(observer)
+
+        # Extract observer coordinates
+        ox, oy = observer.coords[0][:2]
+
+        # Check if observer is in the polygon (including boundary)
+        if not polygon.covers(observer):
+            raise ValueError("Observer is not in the polygon")
+
+        # Get polygon vertices
+        vertices = list(polygon.exterior.coords)
+
+        # Check if observer is exactly at a vertex
+        is_vertex = False
+        for v in vertices:
+            if math.isclose(ox, v[0], abs_tol=1e-8) and math.isclose(
+                oy, v[1], abs_tol=1e-8
+            ):
+                is_vertex = True
+                break
+
+        # Create new polygon with observer as vertex if on edge
+        new_vertices = []
+        if not is_vertex and polygon.touches(observer):
+            for i in range(len(vertices) - 1):
+                p1, p2 = vertices[i], vertices[i + 1]
+                edge = LineString([p1, p2])
+                if edge.distance(observer) < 1e-8:
+                    new_vertices.append(p1)
+                    new_vertices.append((ox, oy))
+                    is_vertex = True
+                else:
+                    new_vertices.append(p1)
+            new_vertices.append(vertices[-1])
+            vertices = new_vertices
+            polygon = Polygon(vertices)
+
+        # Create edges (excluding zero-length edges)
+        edges = []
+        for i in range(len(vertices) - 1):
+            p1, p2 = vertices[i], vertices[i + 1]
+            if math.isclose(p1[0], p2[0], abs_tol=1e-8) and math.isclose(
+                p1[1], p2[1], abs_tol=1e-8
+            ):
+                continue
+            edges.append(LineString([p1, p2]))
+
+        # Get critical directions (vertices and edge-aligned directions)
+        directions = set()
+        epsilon = 1e-7  # Small angular offset
+
+        for v in vertices:
+            vx, vy = v[:2]
+            if math.isclose(vx, ox, abs_tol=1e-8) and math.isclose(
+                vy, oy, abs_tol=1e-8
+            ):
+                continue
+
+            dx = vx - ox
+            dy = vy - oy
+            dist = math.hypot(dx, dy)
+            directions.add((dx / dist, dy / dist))
+
+            # Add edge-aligned directions for adjacent edges
+            if is_vertex:
+                # Find adjacent vertices
+                prev_idx = (vertices.index(v) - 1) % (len(vertices)) - 1
+                next_idx = (vertices.index(v) + 1) % (len(vertices)) - 1
+
+                for adj in [vertices[prev_idx], vertices[next_idx]]:
+                    if math.isclose(adj[0], ox, abs_tol=1e-8) and math.isclose(
+                        adj[1], oy, abs_tol=1e-8
+                    ):
+                        # Direction along the edge
+                        edge_dir_x = vx - ox
+                        edge_dir_y = vy - oy
+                        edge_dist = math.hypot(edge_dir_x, edge_dir_y)
+                        if edge_dist > 1e-8:
+                            directions.add(
+                                (edge_dir_x / edge_dist, edge_dir_y / edge_dist)
+                            )
+
+        # Add epsilon-offset rays for all critical directions
+        all_directions = []
+        for dx, dy in directions:
+            all_directions.append((dx, dy))
+
+            # Add clockwise offset
+            all_directions.append(
+                (
+                    dx * math.cos(epsilon) - dy * math.sin(epsilon),
+                    dx * math.sin(epsilon) + dy * math.cos(epsilon),
+                )
+            )
+
+            # Add counter-clockwise offset
+            all_directions.append(
+                (
+                    dx * math.cos(epsilon) + dy * math.sin(epsilon),
+                    -dx * math.sin(epsilon) + dy * math.cos(epsilon),
+                )
+            )
+
+        # Calculate max ray distance
+        max_dist = 2 * max(math.hypot(v[0] - ox, v[1] - oy) for v in vertices)
+
+        # Find closest intersections
+        visibility_points = []
+        for dx, dy in all_directions:
+            ray_end = (ox + dx * max_dist, oy + dy * max_dist)
+            ray = LineString([(ox, oy), ray_end])
+
+            closest_intersection = None
+            min_dist_sq = float("inf")
+
+            for edge in edges:
+                # Skip edges containing observer
+                if edge.distance(observer) < 1e-8:
+                    continue
+
+                # Handle potential floating-point issues
+                try:
+                    intersection = ray.intersection(edge)
+                except:
+                    continue
+
+                if intersection.is_empty:
+                    continue
+
+                # Process different intersection types
+                if intersection.geom_type == "Point":
+                    points = [intersection]
+                elif intersection.geom_type == "MultiPoint":
+                    points = intersection.geoms
+                elif intersection.geom_type == "LineString":
+                    points = [Point(p) for p in intersection.coords]
+                else:
+                    continue
+
+                for p in points:
+                    px, py = p.x, p.y
+                    if math.isclose(px, ox, abs_tol=1e-8) and math.isclose(
+                        py, oy, abs_tol=1e-8
+                    ):
+                        continue
+
+                    # Calculate squared distance
+                    dist_sq = (px - ox) ** 2 + (py - oy) ** 2
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        closest_intersection = p
+
+            if closest_intersection:
+                visibility_points.append(
+                    (closest_intersection.x, closest_intersection.y)
+                )
+
+        # Remove duplicates
+        unique_points = []
+        for p in visibility_points:
+            if not any(
+                math.isclose(p[0], up[0], abs_tol=1e-8)
+                and math.isclose(p[1], up[1], abs_tol=1e-8)
+                for up in unique_points
+            ):
+                unique_points.append(p)
+
+        # Sort by angle
+        def angle_from_observer(p):
+            return math.atan2(p[1] - oy, p[0] - ox)
+
+        unique_points.sort(key=angle_from_observer)
+
+        return unique_points
 
 
 class SubthemeHandler:
@@ -26,48 +221,26 @@ class SubthemeHandler:
         # Примечание: если подтем более низкого уровня нет, массив объявляется пустым.
 
         self.subtheme_variants = [
-            ["Введение", [["Формулировка", []], ["Некоторые очевидные выводы", []]]],
+            ["Ведение", []],
+            ["Описание проблемы", []],
+            ["Алгоритм Стива Фиска", []],
             [
-                "Решение Стива Фиска",
+                "Триангуляция многоугольника (без добавления новых вершин)",
                 [
+                    ["Некоторые определения", []],
+                    ["Жадный алгоритм", []],
                     [
-                        "Триангуляция",
+                        "Метод отрезания ушей",
                         [
-                            ["Жадный алгоритм", []],
-                            ["Триангуляция выпуклого многоугольника", []],
-                            [
-                                "Метод отрезания ушей",
-                                [
-                                    ["Некоторые определения", []],
-                                    [
-                                        "Некоторые теоремы",
-                                        [
-                                            ["Триангуляционная теорема", []],
-                                            ["Теорема о двух ушах", []],
-                                        ],
-                                    ],
-                                    [
-                                        "Алгоритм нахождения уха и оценка вычислительной сложности",
-                                        [],
-                                    ],
-                                    [
-                                        "Алгоритм триангуляции и оценка вычислительной сложности",
-                                        [],
-                                    ],
-                                    [
-                                        "Вывод о методе триангуляции путём отрезания ушей",
-                                        [],
-                                    ],
-                                ],
-                            ],
+                            ["Некоторые теоремы", []],
+                            ["Алгоритм", []],
                         ],
                     ],
-                    ["Раскраска вершин", []],
-                    ["Остатки от деления", []],
-                    ["Вывод о решении Стива Фикса", []],
                 ],
             ],
-            ["Заключение и напутствие", []],
+            ["Раскраска вершин", []],
+            ["Остатки от деления", []],
+            ["Заключение", []],
         ]
 
         # Дерево subtheme_variants, но развёрнутое в список путей (pre-order)
@@ -227,6 +400,9 @@ class SubthemeHandler:
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
 
+# Глобальный экземпляр Solution
+global_solution = Solution()
+
 # Русский шрифт
 rus_text_template = TexTemplate(
     tex_compiler="xelatex",
@@ -236,6 +412,37 @@ rus_text_template = TexTemplate(
 \usepackage{fontspec}
 \setmainfont{Times New Roman}""",
 )
+
+# Координаты
+polygon_dots_positions_list = [
+    [-2.36667, -0.31515],
+    [-2.31818, 0.8303],
+    [-1.19091, 0.8303],
+    [-2.18485, 1.60606],
+    [0.09394, 1.55152],
+    [0.5, 0.94545],
+    [-0.0697, 0.46061],
+    [2.05152, 0.44242],
+    [2.19697, -2.33939],
+    [-0.19697, -2.35152],
+    [-0.11818, 0.09091],
+    [-0.71818, 0.60606],
+    [-0.70606, -0.58182],
+    [-1.31818, -0.5697],
+    [-1.3303, -1.0303],
+    [-0.40909, -0.70909],
+    [-1.25758, -2.15152],
+    [-1.7, -2.15152],
+    [-1.69394, -1.00606],
+    [-4.16061, -0.98788],
+    [-4.12424, 0.27273],
+    [-3.22727, 0.53939],
+    [-3.20303, 0.92121],
+    [-4.11212, 1.42424],
+    [-4.10606, 2.21212],
+    [-2.63939, 2.19394],
+    [-2.7, -0.29697],
+]
 
 
 class Greetings(Scene):
@@ -254,29 +461,44 @@ class Greetings(Scene):
             "Подготовил Емельяненко Владимир",
             font_size=28,
         )
-        author.move_to(theme.get_bottom() + DOWN * 0.2)
+        author.next_to(author, DOWN, buff=MED_LARGE_BUFF)
 
         # Вывод
         text_out_group = VGroup(theme, author)
-        out_lag_ratio = 1.5
+        out_lag_ratio = 0.35
 
         self.wait()
         self.play(AnimationGroup(Write(text_out_group), lag_ratio=out_lag_ratio))
+        self.play(
+            Circumscribe(
+                mobject=text_out_group,
+                run_time=2,
+                buff=MED_SMALL_BUFF,
+            )
+        )
         self.wait()
         self.play(AnimationGroup(Unwrite(text_out_group), lag_ratio=out_lag_ratio))
         self.wait()
 
 
 class TableOfContents(Scene):
+    def _unpack(self, subthemes: List, deep: int=0, prev_num_sys: str="") -> List[str]:
+        plain_lines = []
+        for i, subtheme in enumerate(subthemes, start=1):
+            plain_lines.append(("\t" * deep) + prev_num_sys + str(i) + ". " + subtheme[0])
+            if len(subtheme[1]) != 0:
+                plain_lines.extend(self._unpack(subthemes=subtheme[1], deep=deep + 1, prev_num_sys=f"{prev_num_sys}{i}."))
+        return plain_lines
+        
+
     def construct(self):
-        out_lines = []
-        line = Tex("Table of Content", tex_template=rus_text_template)
-        for i, (path, _) in enumerate(global_subtheme_handler.flat_paths):
-            num_str = ".".join(str(i + 1) for i in path)
-            out_lines.append(num_str)
-        self.play(Write(VGroup(Text(line for line in out_lines))))
+        title = Title("Содержание", tex_template=rus_text_template)
+        body = Paragraph("\n".join(self._unpack(global_subtheme_handler.subtheme_variants))).scale_to_fit_width(config.frame_width * 0.85)
         self.wait()
-        self.play(Write())
+        self.play((Succession(Write(title), Write(body))))
+        self.wait()
+        self.play(LaggedStart(Unwrite(body), Unwrite(title), lag_ratio=0.3))
+        self.wait()
 
 
 class ProblemDescription(Scene):
@@ -285,194 +507,13 @@ class ProblemDescription(Scene):
     В течении действия рассказываю о сути проблемы.
     """
 
-    def _angle_and_dist(self, observer, point):
-        """
-        Возвращает пару (angle, dist2) от observer к point:
-        - angle  — угол в радианах (atan2),
-        - dist2  — квадрат евклидова расстояния.
-        """
-        dx = point[0] - observer[0]
-        dy = point[1] - observer[1]
-        return math.atan2(dy, dx), dx * dx + dy * dy
-
-    def _build_edges(self, polygon):
-        """Возвращает список Shapely LineString-ребер для заданного списка вершин."""
-        edges = []
-        n = len(polygon)
-        for i in range(n):
-            a = polygon[i]
-            b = polygon[(i + 1) % n]
-            edges.append(LineString([a, b]))
-        return edges
-
-    def _cast_ray(self, observer, angle, edges, max_dist=1e6, delta=1e-6):
-        """
-        Стреляет лучом, начало которого сдвинуто вдоль собственного направления на δ.
-        Это универсально защищает от граничных случаев.
-        """
-        ox, oy = observer
-        dx = math.cos(angle)
-        dy = math.sin(angle)
-        # локальный сдвиг вдоль направления луча
-        start = (ox + dx * delta, oy + dy * delta)
-        far = (ox + dx * max_dist, oy + dy * max_dist)
-        ray = LineString([start, far])
-
-        closest_pt = None
-        min_d2 = float("inf")
-        for edge in edges:
-            inter = ray.intersection(edge)
-            if inter.is_empty:
-                continue
-            points = inter.geoms if hasattr(inter, "geoms") else [inter]
-            for p in points:
-                d2 = (p.x - ox) ** 2 + (p.y - oy) ** 2
-                if d2 < min_d2:
-                    min_d2 = d2
-                    closest_pt = (p.x, p.y)
-
-        return closest_pt
-
-    def _get_all_coords(self, geom):
-        """
-        Рекурсивно обходит любую Shapely-геометрию и возвращает список
-        всех точек (x, y) из её компонентов.
-        """
-        coords = []
-
-        if geom.is_empty:
-            return coords
-
-        geom_type = geom.geom_type
-
-        if geom_type == "Point":
-            # одиночная точка
-            coords.append((geom.x, geom.y))
-
-        elif geom_type == "LineString":
-            # линия — просто её координаты
-            coords.extend(list(geom.coords))
-
-        elif geom_type == "Polygon":
-            # внешний контур
-            coords.extend(list(geom.exterior.coords))
-            # внутренние кольца (дыры)
-            for interior in geom.interiors:
-                coords.extend(list(interior.coords))
-
-        elif geom_type in (
-            "MultiPoint",
-            "MultiLineString",
-            "MultiPolygon",
-            "GeometryCollection",
-        ):
-            # любые коллекции — рекурсивно пробегаем по .geoms
-            for part in geom.geoms:
-                coords.extend(self._get_all_coords(part))
-
-        else:
-            # на всякий случай
-            raise ValueError(f"Неожиданный тип геометрии: {geom_type}")
-
-        return coords
-
-    def compute_visibility(
-        self,
-        polygon: list[tuple[float, float]] | Polygon,
-        observer: tuple[float, float] | Dot,
-        epsilon=1e-8,
-    ):
-        """
-        Возвращает список вершин полигона видимости из observer внутри polygon.
-
-        epsilon  — угол отклонения для «щелей» (по умолчанию 1e-8).
-        """
-        # 0) Проверяем классы
-        if isinstance(polygon, Polygon):
-            polygon = [tuple(coords[:2]) for coords in polygon.get_vertices()]
-        if isinstance(observer, Dot):
-            observer = tuple(observer.get_center()[:2])
-
-        # Проверяем, что охранник внутри галерее
-        # if not ShapelyPoint(observer).covered_by(ShapelyPolygon(p)):
-        #     raise ValueError(f"Guard with coords {observer} is not in gallery")
-
-        # 1) Собираем все уникальные углы к вершинам
-        base_angles = set()
-        for p in polygon:
-            ang, _ = self._angle_and_dist(observer, p)
-            base_angles.add(ang)
-
-        # 2) Генерируем «расщеплённые» углы
-        angles = []
-        for ang in base_angles:
-            angles.extend((ang - epsilon, ang, ang + epsilon))
-
-        # 3) Строим ребра и «стреляем» всеми лучами
-        edges = self._build_edges(polygon)
-        hits = []
-        for ang in angles:
-            pt = self._cast_ray(observer, ang, edges)
-            if pt is not None:
-                hits.append((ang, pt))
-
-        # 4) Дедуплицируем по углу, оставляя ближайшую точку
-        nearest = {}
-        for ang, pt in hits:
-            _, d2 = self._angle_and_dist(observer, pt)
-            if (
-                ang not in nearest
-                or d2 < self._angle_and_dist(observer, nearest[ang])[1]
-            ):
-                nearest[ang] = pt
-
-        # 5) Сортируем по углу
-        result = [nearest[ang] for ang in sorted(nearest)]
-
-        # Берем пересечение
-        # result = ShapelyPolygon(polygon).intersection(ShapelyPolygon(result))
-
-        # Возврат
-        return result
-
     def construct(self):
         # ПОДТЕМА
-        # global_subtheme_handler.update_subtheme(self)
+        global_subtheme_handler.update_subtheme(self)
 
         # МНОГОУГОЛЬНИК
         # Множители маштаба
         coord_multipliers = [1.5, 1.5, 0]
-
-        # Координаты
-        polygon_dots_positions_list = [
-            [-2.36667, -0.31515],
-            [-2.31818, 0.8303],
-            [-1.19091, 0.8303],
-            [-2.18485, 1.60606],
-            [0.09394, 1.55152],
-            [0.5, 0.94545],
-            [-0.0697, 0.46061],
-            [2.05152, 0.44242],
-            [2.19697, -2.33939],
-            [-0.19697, -2.35152],
-            [-0.11818, 0.09091],
-            [-0.71818, 0.60606],
-            [-0.70606, -0.58182],
-            [-1.31818, -0.5697],
-            [-1.3303, -1.0303],
-            [-0.40909, -0.70909],
-            [-1.25758, -2.15152],
-            [-1.7, -2.15152],
-            [-1.69394, -1.00606],
-            [-4.16061, -0.98788],
-            [-4.12424, 0.27273],
-            [-3.22727, 0.53939],
-            [-3.20303, 0.92121],
-            [-4.11212, 1.42424],
-            [-4.10606, 2.21212],
-            [-2.63939, 2.19394],
-            [-2.7, -0.29697],
-        ]
 
         # Добавление видимых точек многоугольника
         polygon_dots_list = VGroup()
@@ -502,9 +543,10 @@ class ProblemDescription(Scene):
         # Отрисовка многоугольника
         self.play(
             LaggedStart(
-                Create(polygon_dots_list, run_time=3, rate_func=linear),
-                Create(polygon, run_time=3, rate_func=linear),
+                Create(polygon_dots_list, rate_func=linear),
+                Create(polygon, rate_func=linear),
                 lag_ratio=0.1,
+                run_time=3,
             )
         )
         self.wait()
@@ -513,6 +555,14 @@ class ProblemDescription(Scene):
         guard = Dot([-0.5, 0, 0], 0.12, color=RED, z_index=1)
         self.play(GrowFromCenter(guard))
         self.wait()
+        self.play(
+            Flash(
+                point=guard,
+                line_length=0.5,
+                flash_radius=guard.radius + 0.01,
+                color=guard.get_color(),
+            )
+        )
 
         # Показ того, что он смотрит на 360
         line_of_sight = Line(
@@ -546,7 +596,7 @@ class ProblemDescription(Scene):
         self.wait()
 
         # Отрисовка поля зрения
-        guard_view_coords = self.compute_visibility(polygon, guard)
+        guard_view_coords = global_solution.calculate_visibility(polygon, guard)
         FOV_KWARGS = {
             "stroke_opacity": 0,
             "fill_color": GREEN,
@@ -561,11 +611,10 @@ class ProblemDescription(Scene):
         self.wait()
 
         # Движение охранника
-        guard_view.add_updater(
-            lambda mobj: mobj.set_points_as_corners(
-                [(x, y, 0) for x, y in self.compute_visibility(polygon, guard)]
-            )
+        updater_func = lambda mobj: mobj.set_points_as_corners(
+            [(x, y, 0) for x, y in global_solution.calculate_visibility(polygon, guard)]
         )
+        guard_view.add_updater(updater_func)
         path = VMobject(fill_opacity=0).set_points_smoothly(
             [
                 guard.get_center(),
@@ -589,15 +638,78 @@ class ProblemDescription(Scene):
         self.wait()
 
         # Перемещения охранника в угол
-        # self.play(guard.animate.move_to(polygon_dots_list[15].get_center()))
-        # guard_view_coords = self.compute_visibility(polygon, guard)
-        # self.play(Transform(guard_view, Polygon(
-        #     *[(x, y, 0) for x, y in guard_view_coords],
-        #     **FOV_KWARGS
-        # )))
-        # self.wait()
+        guard_view.add_updater(updater_func)
+        self.play(guard.animate.move_to(polygon_dots_list[-8].get_center()))
+        guard_view.clear_updaters()
+        self.wait()
 
         # Создание новых охранников, которые полностью осматривают многоугольник
 
         # Удаление
-        # self.play(FadeOut(mobj for mobj in self.mobjects))
+        self.play(
+            AnimationGroup(
+                Uncreate(guard_view),
+                Uncreate(guard),
+                LaggedStart(
+                    Create(polygon_dots_list, rate_func=lambda a: 1 - linear(a)),
+                    Create(polygon, rate_func=lambda a: 1 - linear(a)),
+                    lag_ratio=0.1,
+                ),
+                run_time=5,
+            )
+        )
+        self.wait()
+
+
+class Algorithm(Scene):
+    def construct(self):
+
+        # Обновление подтемы
+        global_subtheme_handler.init_subtheme(self)
+        global_subtheme_handler.update_subtheme(self)
+
+        # Разделение экрана
+        self.wait()
+        divided_line1 = Line(ORIGIN, DOWN * config.frame_height / 2 * 0.85, color=WHITE)
+        divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
+        divided_lines = VGroup(divided_line1, divided_line2)
+        self.play(Create(divided_lines, lag_ratio=0))
+        self.wait()
+
+        # Добавление многоугольника
+        polygon = (
+            Polygon(
+                *[[x, y, 0] for x, y in polygon_dots_positions_list],
+                color=WHITE,
+                stroke_width=DEFAULT_STROKE_WIDTH * 0.6,
+            )
+            .scale_to_fit_width(config.frame_width / 2 * 0.85)
+            .move_to(RIGHT * config.frame_width / 4)
+        )
+        polygon_dots = VGroup()
+        for coords in polygon.get_vertices():
+            polygon_dots.add(
+                Dot(coords, color=polygon.get_color(), radius=DEFAULT_DOT_RADIUS * 0.6)
+            )
+        self.play(
+            LaggedStart(
+                Create(polygon_dots, rate_func=linear),
+                Create(polygon, rate_func=linear),
+                lag_ratio=0.1,
+                run_time=3,
+            )
+        )
+        self.wait()
+
+        # Создание нумерованного списка шагов
+        steps_strs = [
+            "Триангулировать многоугольник (без добавления новых вершин)",
+            "Раскрасить вершины в три цвета так, чтобы каждый треугольник был окрашен всеми тремя цветами",
+            "Теперь весь многоугольник просматривается всеми охранниками одной группы",
+            r"Цвет с меньшим количеством вершин образует множество максимум \lfloor n/3 \rfloor вершин",
+        ]
+        steps = VGroup()
+        for i, line in (range(1, len(steps_strs)), steps_strs):
+            steps.add(f"{str(i)}. {line}")
+
+        # Шаг 1. Триангуляция
