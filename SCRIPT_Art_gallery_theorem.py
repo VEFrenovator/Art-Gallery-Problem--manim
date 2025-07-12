@@ -8,7 +8,7 @@ shapely: Продвинутая геометрии библиотека. Исп�
 """
 
 import math
-from typing import Iterable, Tuple, List
+from typing import Iterable, Tuple, List, Set
 from manim import *
 from shapely.geometry import (
     Polygon as ShapelyPolygon,
@@ -211,7 +211,7 @@ class Solution:
 
     def triangulate(
         self, polygon: List[Tuple[float, float]] | Polygon | ShapelyPolygon
-    ) -> List[Tuple[float, float, float]]:
+    ) -> List[Tuple[int, int, int]]:
         if isinstance(polygon, Polygon):
             polygon = np.array(
                 [coords[:2] for coords in polygon.get_vertices()]
@@ -225,6 +225,17 @@ class Solution:
 
         result = earcut.triangulate_float32(polygon, rings_end_i).tolist()
         return [tuple(result[i : i + 3]) for i in range(0, len(result), 3)]
+
+    def tricolor(
+        self, triangles: List[Tuple], polygon_vertices_count: int
+    ) -> Tuple[Set, Set, Set]:
+
+        group_a, group_b, group_c = (
+            set(triangles[0][0]),
+            set(triangles[0][1]),
+            set(triangles[0][2]),
+        )
+        # while len(group_a) + len(group_b) + len(group_c) < polygon_vertices_count:
 
 
 class SubthemeHandler:
@@ -704,10 +715,18 @@ class Algorithm(Scene):
         divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
         divided_lines = VGroup(divided_line1, divided_line2)
         titles = VGroup(
-            MarkupText("<u>Шаги</u>", font_size=36).to_edge(UP).shift(LEFT * config.frame_width / 4),
-            MarkupText("<u>Многоугольник</u>", font_size=36).to_edge(UP).shift(RIGHT * config.frame_width / 4),
+            MarkupText("<u>Шаги</u>", font_size=36)
+            .to_edge(UP)
+            .shift(LEFT * config.frame_width / 4),
+            MarkupText("<u>Многоугольник</u>", font_size=36)
+            .to_edge(UP)
+            .shift(RIGHT * config.frame_width / 4),
         )
-        self.play(AnimationGroup(Create(divided_lines, lag_ratio=0), Write(titles, lag_ratio=0)))
+        self.play(
+            AnimationGroup(
+                Create(divided_lines, lag_ratio=0), Write(titles, lag_ratio=0)
+            )
+        )
         self.wait()
 
         # Добавление многоугольника
