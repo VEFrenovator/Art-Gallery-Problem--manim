@@ -8,7 +8,7 @@ shapely: Продвинутая геометрии библиотека. Исп�
 """
 
 import math
-from typing import Iterable, Tuple, List, Set
+from typing import Iterable, Tuple, List, Set, Optional
 from manim import *
 from shapely.geometry import (
     Polygon as ShapelyPolygon,
@@ -229,13 +229,35 @@ class Solution:
     def tricolor(
         self, triangles: List[Tuple], polygon_vertices_count: int
     ) -> Tuple[Set, Set, Set]:
+        
+        def third_non_colored(triangle: Tuple) -> Optional[Tuple[int, Set]]:
+            indexes = list(triangle)
+            groups = [group_a, group_b, group_c]
+
+            for i, vert in enumerate(triangle):
+                for j, group in enumerate(groups):
+                    if vert in group:
+                        del indexes[i]
+                        del groups[j]
+                        break
+            
+            if len(indexes) == 1:
+                return indexes[0], groups[0]
+
 
         group_a, group_b, group_c = (
             set(triangles[0][0]),
             set(triangles[0][1]),
             set(triangles[0][2]),
         )
-        # while len(group_a) + len(group_b) + len(group_c) < polygon_vertices_count:
+        while len(group_a) + len(group_b) + len(group_c) < polygon_vertices_count:
+            for triangle in triangles:
+                non_colored = third_non_colored(triangle)
+                if non_colored is not None:
+                    index, group = non_colored
+                    group.add(index)
+        
+        return group_a, group_b, group_c
 
 
 class SubthemeHandler:
