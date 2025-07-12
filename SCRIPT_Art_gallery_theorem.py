@@ -221,7 +221,7 @@ class SubthemeHandler:
         # Примечание: если подтем более низкого уровня нет, массив объявляется пустым.
 
         self.subtheme_variants = [
-            ["Ведение", []],
+            ["Введение", []],
             ["Описание проблемы", []],
             ["Алгоритм Стива Фиска", []],
             [
@@ -404,13 +404,14 @@ global_subtheme_handler = SubthemeHandler()
 global_solution = Solution()
 
 # Русский шрифт
-rus_text_template = TexTemplate(
+rus_tex_template = TexTemplate(
     tex_compiler="xelatex",
     output_format=".xdv",
     preamble=r"""\usepackage{polyglossia}
 \setmainlanguage{russian}
 \usepackage{fontspec}
-\setmainfont{Times New Roman}""",
+\defaultfontfeatures{Numbers = Lining}
+\setmainfont{Consolas}[Numbers = Lining]""",
 )
 
 # Координаты
@@ -453,7 +454,7 @@ class Greetings(Scene):
     def construct(self):
         # Приветственный текст
         theme = Text(
-            "Теорема о картинной галереи",
+            "Теорема о картинной галерее",
             font_size=48,
         )
 
@@ -492,7 +493,7 @@ class TableOfContents(Scene):
         
 
     def construct(self):
-        title = Title("Содержание", tex_template=rus_text_template)
+        title = Title("Содержание", tex_template=rus_tex_template)
         body = Paragraph("\n".join(self._unpack(global_subtheme_handler.subtheme_variants))).scale_to_fit_width(config.frame_width * 0.85)
         self.wait()
         self.play((Succession(Write(title), Write(body))))
