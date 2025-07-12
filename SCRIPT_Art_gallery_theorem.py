@@ -15,6 +15,7 @@ from shapely.geometry import (
     Point as ShapelyPoint,
     LineString,
 )
+import mapbox_earcut as earcut
 
 
 class Solution:
@@ -207,6 +208,23 @@ class Solution:
         unique_points.sort(key=angle_from_observer)
 
         return unique_points
+
+    def triangulate(
+        self, polygon: List[Tuple[float, float]] | Polygon | ShapelyPolygon
+    ) -> List[Tuple[float, float, float]]:
+        if isinstance(polygon, Polygon):
+            polygon = np.array(
+                [coords[:2] for coords in polygon.get_vertices()]
+            ).reshape(-1, 2)
+        elif isinstance(polygon, ShapelyPolygon):
+            polygon = np.array(
+                [coords[:2] for coords in polygon.exterior.coords]
+            ).reshape(-1, 2)
+
+        rings_end_i = np.array([len(polygon)])
+
+        result = earcut.triangulate_float32(polygon, rings_end_i).tolist()
+        return [tuple(result[i : i + 3]) for i in range(0, len(result), 3)]
 
 
 class SubthemeHandler:
@@ -411,7 +429,7 @@ rus_tex_template = TexTemplate(
 \setmainlanguage{russian}
 \usepackage{fontspec}
 \defaultfontfeatures{Numbers = Lining}
-\setmainfont{Consolas}[Numbers = Lining]""",
+\setmainfont{Times New Roman}[Numbers = Lining]""",
 )
 
 # Координаты
@@ -483,18 +501,29 @@ class Greetings(Scene):
 
 
 class TableOfContents(Scene):
-    def _unpack(self, subthemes: List, deep: int=0, prev_num_sys: str="") -> List[str]:
+    def _unpack(
+        self, subthemes: List, deep: int = 0, prev_num_sys: str = ""
+    ) -> List[str]:
         plain_lines = []
         for i, subtheme in enumerate(subthemes, start=1):
-            plain_lines.append(("\t" * deep) + prev_num_sys + str(i) + ". " + subtheme[0])
+            plain_lines.append(
+                ("\t" * deep) + prev_num_sys + str(i) + ". " + subtheme[0]
+            )
             if len(subtheme[1]) != 0:
-                plain_lines.extend(self._unpack(subthemes=subtheme[1], deep=deep + 1, prev_num_sys=f"{prev_num_sys}{i}."))
+                plain_lines.extend(
+                    self._unpack(
+                        subthemes=subtheme[1],
+                        deep=deep + 1,
+                        prev_num_sys=f"{prev_num_sys}{i}.",
+                    )
+                )
         return plain_lines
-        
 
     def construct(self):
         title = Title("Содержание", tex_template=rus_tex_template)
-        body = Paragraph("\n".join(self._unpack(global_subtheme_handler.subtheme_variants))).scale_to_fit_width(config.frame_width * 0.85)
+        body = Paragraph(
+            "\n".join(self._unpack(global_subtheme_handler.subtheme_variants))
+        ).scale_to_fit_width(config.frame_width * 0.85)
         self.wait()
         self.play((Succession(Write(title), Write(body))))
         self.wait()
@@ -666,15 +695,19 @@ class Algorithm(Scene):
     def construct(self):
 
         # Обновление подтемы
-        global_subtheme_handler.init_subtheme(self)
-        global_subtheme_handler.update_subtheme(self)
+        # global_subtheme_handler.init_subtheme(self)
+        # global_subtheme_handler.update_subtheme(self)
 
         # Разделение экрана
         self.wait()
         divided_line1 = Line(ORIGIN, DOWN * config.frame_height / 2 * 0.85, color=WHITE)
         divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
         divided_lines = VGroup(divided_line1, divided_line2)
-        self.play(Create(divided_lines, lag_ratio=0))
+        titles = VGroup(
+            MarkupText("<u>Шаги</u>", font_size=36).to_edge(UP).shift(LEFT * config.frame_width / 4),
+            MarkupText("<u>Многоугольник</u>", font_size=36).to_edge(UP).shift(RIGHT * config.frame_width / 4),
+        )
+        self.play(AnimationGroup(Create(divided_lines, lag_ratio=0), Write(titles, lag_ratio=0)))
         self.wait()
 
         # Добавление многоугольника
@@ -683,11 +716,12 @@ class Algorithm(Scene):
                 *[[x, y, 0] for x, y in polygon_dots_positions_list],
                 color=WHITE,
                 stroke_width=DEFAULT_STROKE_WIDTH * 0.6,
+                z_index=1,
             )
             .scale_to_fit_width(config.frame_width / 2 * 0.85)
             .move_to(RIGHT * config.frame_width / 4)
         )
-        polygon_dots = VGroup()
+        polygon_dots = VGroup(z_index=polygon.z_index)
         for coords in polygon.get_vertices():
             polygon_dots.add(
                 Dot(coords, color=polygon.get_color(), radius=DEFAULT_DOT_RADIUS * 0.6)
@@ -704,13 +738,43 @@ class Algorithm(Scene):
 
         # Создание нумерованного списка шагов
         steps_strs = [
-            "Триангулировать многоугольник (без добавления новых вершин)",
-            "Раскрасить вершины в три цвета так, чтобы каждый треугольник был окрашен всеми тремя цветами",
-            "Теперь весь многоугольник просматривается всеми охранниками одной группы",
-            r"Цвет с меньшим количеством вершин образует множество максимум \lfloor n/3 \rfloor вершин",
+            "Триангулировать многоугольник (без добавления новых вершин).",
+            "Раскрасить вершины в три цвета так, чтобы каждый треугольник был окрашен всеми тремя цветами.",
+            "Теперь весь многоугольник просматривается всеми охранниками одной группы.",
+            r"Цвет с меньшим количеством вершин образует множество максимум $\lfloor n/3 \rfloor$ вершин.",
         ]
         steps = VGroup()
-        for i, line in (range(1, len(steps_strs)), steps_strs):
-            steps.add(f"{str(i)}. {line}")
+        for i, line in enumerate(steps_strs):
+            steps.add(Tex(f"{str(i + 1)}. {line}", tex_template=rus_tex_template))
+            if len(steps) >= 2:
+                steps[i].next_to(steps[i - 1], DOWN)
+        steps.move_to(LEFT * config.frame_width / 4).scale_to_fit_width(
+            config.frame_width / 2 * 0.85
+        )
 
         # Шаг 1. Триангуляция
+        triangles_ids = global_solution.triangulate(polygon)
+        triangles = VGroup()
+
+        for triangle_id in triangles_ids:
+            dot1_i, dot2_i, dot3_i = triangle_id
+            triangle_coords = [
+                polygon_dots[dot1_i].get_center(),
+                polygon_dots[dot2_i].get_center(),
+                polygon_dots[dot3_i].get_center(),
+            ]
+            triangles.add(
+                Polygon(
+                    *triangle_coords,
+                    color=GRAY,
+                    stroke_width=DEFAULT_STROKE_WIDTH * 0.5,
+                    joint_type=LineJointType.BEVEL,
+                )
+            )
+        self.play(
+            AnimationGroup(
+                Write(steps[0]),
+                Create(triangles, lag_ratio=0.1),
+            )
+        )
+        self.wait()
