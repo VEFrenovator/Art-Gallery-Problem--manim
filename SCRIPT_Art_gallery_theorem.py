@@ -789,12 +789,18 @@ class Algorithm(Scene):
         ]
         steps = VGroup()
         for i, line in enumerate(steps_strs):
-            steps.add(Tex(f"{str(i + 1)}. {line}", tex_template=rus_tex_template))
+            steps.add(
+                Tex(
+                    f"{str(i + 1)}. {line}",
+                    tex_template=rus_tex_template,
+                    should_center=False,
+                    width=config.frame_width / 2 * 0.9,
+                    height=config.frame_height / 4 * 0.7,
+                )
+            )
             if len(steps) >= 2:
                 steps[i].next_to(steps[i - 1], DOWN)
-        steps.move_to(LEFT * config.frame_width / 4).scale_to_fit_width(
-            config.frame_width / 2 * 0.85
-        )
+        steps.move_to(LEFT * config.frame_width / 4)
 
         # Шаг 1. Триангуляция
         triangles_ids = global_solution.triangulate(polygon)
@@ -816,11 +822,7 @@ class Algorithm(Scene):
                 )
             )
         self.play(
-            AnimationGroup(
-                Write(steps[0]),
-                Create(triangles, lag_ratio=0.1),
-                run_time=5,
-            )
+            Write(steps[0], run_time=2), Create(triangles, lag_ratio=0.2, run_time=4)
         )
         self.wait()
 
@@ -858,4 +860,27 @@ class Algorithm(Scene):
                 )
             )
         self.play(AnimationGroup(*indications))
+        self.wait()
+
+        self.play(Write(steps[2]), run_time=2)
+        self.play(triangles.animate.set_fill(PURE_BLUE, 0.75), run_time=2)
+        self.play(triangles.animate.set_fill(PURE_GREEN, 0.75), run_time=2)
+        self.play(triangles.animate.set_fill(PURE_RED, 0.75), run_time=2)
+        self.play(triangles.animate.set_fill(None, 0), run_time=2)
+        self.wait()
+
+        color_poly_groups: VGroup[VGroup[Dot]] = VGroup()
+        color_poly_arranged_groups: VGroup[VGroup[Dot]] = VGroup()
+        for color_group in color_groups:
+            color_poly_group = VGroup()
+            for vert_id in color_group:
+                color_poly_group.add(polygon_dots[vert_id])
+            color_poly_groups.add(color_poly_group)
+            color_poly_arranged_groups.add(color_poly_groups[-1].copy().arrange_in_grid(cols=3))
+
+        for i in color_poly_arranged_groups[1:]:
+            color_poly_arranged_groups[i].next_to(color_poly_arranged_groups[i - 1], buff=MED_LARGE_BUFF)
+        color_poly_arranged_groups.move_to(ORIGIN).to_edge(DOWN).shift(config.frame_width / 4)
+
+        self.play(Write(steps[3]), Transform(color_poly_groups, color_poly_arranged_groups))
         self.wait()
