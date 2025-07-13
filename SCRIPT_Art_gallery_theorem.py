@@ -227,36 +227,39 @@ class Solution:
         return [tuple(result[i : i + 3]) for i in range(0, len(result), 3)]
 
     def tricolor(
-        self, triangles: List[Tuple], polygon_vertices_count: int
+        self, triangles: List[Tuple[int, int, int]], polygon_verts_count: int
     ) -> Tuple[Set, Set, Set]:
-        
+
         def third_non_colored(triangle: Tuple) -> Optional[Tuple[int, Set]]:
             indexes = list(triangle)
             groups = [group_a, group_b, group_c]
 
-            for i, vert in enumerate(triangle):
-                for j, group in enumerate(groups):
-                    if vert in group:
+            i, j = 0, 0
+            while i < len(indexes):
+                while j < len(groups):
+                    if indexes[i] in groups[j]:
                         del indexes[i]
                         del groups[j]
                         break
-            
+                    j += 1
+                else:
+                    i += 1
+                j = 0
+
             if len(indexes) == 1:
                 return indexes[0], groups[0]
 
+        group_a, group_b, group_c = set(), set(), set()
+        group_a.add(triangles[0][0])
+        group_b.add(triangles[0][1])
+        group_c.add(triangles[0][2])
 
-        group_a, group_b, group_c = (
-            set(triangles[0][0]),
-            set(triangles[0][1]),
-            set(triangles[0][2]),
-        )
-        while len(group_a) + len(group_b) + len(group_c) < polygon_vertices_count:
+        while len(group_a) + len(group_b) + len(group_c) < polygon_verts_count:
             for triangle in triangles:
                 non_colored = third_non_colored(triangle)
                 if non_colored is not None:
                     index, group = non_colored
                     group.add(index)
-        
         return group_a, group_b, group_c
 
 
@@ -762,7 +765,7 @@ class Algorithm(Scene):
             .scale_to_fit_width(config.frame_width / 2 * 0.85)
             .move_to(RIGHT * config.frame_width / 4)
         )
-        polygon_dots = VGroup(z_index=polygon.z_index)
+        polygon_dots = VGroup(z_index=2)
         for coords in polygon.get_vertices():
             polygon_dots.add(
                 Dot(coords, color=polygon.get_color(), radius=DEFAULT_DOT_RADIUS * 0.6)
@@ -816,6 +819,30 @@ class Algorithm(Scene):
             AnimationGroup(
                 Write(steps[0]),
                 Create(triangles, lag_ratio=0.1),
+            )
+        )
+        self.wait()
+
+        # Шаг 2. Раскраска
+        color_groups = global_solution.tricolor(
+            triangles=triangles_ids,
+            polygon_verts_count=len(polygon_dots_positions_list),
+        )
+        color_variants = (PURE_BLUE, PURE_GREEN, PURE_RED)
+        animations: List[Animation] = []
+
+        # Создаём анимации с задержкой между вершинами
+        for i in range(3):
+            for vert_id in color_groups[i]:
+                vert = polygon_dots[vert_id]
+                animations.append(Indicate(vert, 2.25, color_variants[i]))
+                animations.append(Animation(vert.set_color(color_variants[i])))
+
+        # Запускаем анимации с задержкой между точками
+        self.play(
+            LaggedStart(
+                *animations,
+                run_time=3,
             )
         )
         self.wait()
