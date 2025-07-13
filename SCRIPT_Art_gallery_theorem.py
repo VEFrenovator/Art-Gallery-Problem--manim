@@ -510,7 +510,7 @@ class Greetings(Scene):
         )
 
         author = Text(
-            "Подготовил Емельяненко Владимир",
+            "",
             font_size=28,
         )
         author.next_to(author, DOWN, buff=MED_LARGE_BUFF)
