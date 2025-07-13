@@ -27,4 +27,4 @@ To install the project, run `git clone` or download the `raw` file. For more det
 This project uses ManimCE. Rendering follows the standard [ManimCE rendering process](https://github.com/ManimCommunity/manim?tab=readme-ov-file#usage).
 
 # License
-The project is licensed under the MIT license, with copyright by VEFrenovator (see LICENSE.md)
+The project is licensed under the MIT license, with copyright by VEFrenovator (see [LICENSE.md](https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/LICENSE.md))
