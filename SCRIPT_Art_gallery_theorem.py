@@ -819,6 +819,7 @@ class Algorithm(Scene):
             AnimationGroup(
                 Write(steps[0]),
                 Create(triangles, lag_ratio=0.1),
+                run_time=5,
             )
         )
         self.wait()
@@ -831,18 +832,30 @@ class Algorithm(Scene):
         color_variants = (PURE_BLUE, PURE_GREEN, PURE_RED)
         animations: List[Animation] = []
 
-        # Создаём анимации с задержкой между вершинами
         for i in range(3):
             for vert_id in color_groups[i]:
                 vert = polygon_dots[vert_id]
-                animations.append(Indicate(vert, 2.25, color_variants[i]))
-                animations.append(Animation(vert.set_color(color_variants[i])))
+                animations.append(vert.animate.set_color(color_variants[i]))
 
-        # Запускаем анимации с задержкой между точками
+        polygon_dots.set_z_index(polygon.z_index + 1)
         self.play(
             LaggedStart(
                 *animations,
                 run_time=3,
-            )
+            ),
+            Write(steps[1]),
         )
+
+        indications = []
+        for dot in polygon_dots:
+            indications.append(
+                Indicate(
+                    dot,
+                    2.5,
+                    dot.get_color(),
+                    rate_func=there_and_back_with_pause,
+                    run_time=5,
+                )
+            )
+        self.play(AnimationGroup(*indications))
         self.wait()
