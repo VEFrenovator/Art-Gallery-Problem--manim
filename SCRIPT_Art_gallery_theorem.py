@@ -19,11 +19,30 @@ import mapbox_earcut as earcut
 
 
 class Solution:
+    """
+    Решение поставленной задачи. Именно теоретическое решение, а не вывод анимации.
+
+    Методы
+    ------
+    `calculate_visibility` - расчет поля зрения. \n
+    `triangulate` - триангуляция. \n
+    `tricolor` - раскраска в три цвета. \n
+    """
+
     def calculate_visibility(
         self,
         polygon: Iterable[Iterable[float]] | Polygon | ShapelyPolygon,
         observer: Iterable[float] | Dot | ShapelyPoint,
     ) -> List[Tuple[float]]:
+        """
+        **ПРЕДУПРЕЖДЕНИЕ:** На момент 14.07.2025 не работает, если наблюдатель точно на границе. \n
+        Расчитывает поле зрения наблюдателя (`observer`) в многоугольнике (`polygon`). \n
+        Возвращает поле зрения в виде списка координат.
+
+        Исключения
+        ----------
+        `ValueError`, если наблюдатель не в многоугольнике (учитывая границы).
+        """
 
         # Convert input to Shapely objects
         if isinstance(polygon, Polygon):
@@ -212,6 +231,14 @@ class Solution:
     def triangulate(
         self, polygon: List[Tuple[float, float]] | Polygon | ShapelyPolygon
     ) -> List[Tuple[int, int, int]]:
+        """
+        Триангулирует многоугольник (`polygon`) с помощью метода отрезания ушей. \n
+        Использует библиотеку `mapbox_earcut`. \n
+        Возвращает треугольники триангуляции в виде списка ***индексов вершин треугольников**
+        в списке изначальных вершин многоугольника*. Например, треугольник
+        (0, 1, 2) означает, что вершины исходного многоугольника под индексами (0, 1, 2)
+        образуют треугольник триангуляции.
+        """
         if isinstance(polygon, Polygon):
             polygon = np.array(
                 [coords[:2] for coords in polygon.get_vertices()]
@@ -229,8 +256,23 @@ class Solution:
     def tricolor(
         self, triangles: List[Tuple[int, int, int]], polygon_verts_count: int
     ) -> Tuple[Set, Set, Set]:
+        """
+        Раскрашивает вершины треугольников (`triangles`) в три цвета так, чтобы
+        в любом треугольнике было все три цвета. \n
+        `polygon_verts_count` - количество вершин исходного многоугольника. Другими словами,
+        длина списка `polygon_dots`. \n
+        Возвращает кортеж из трёх множеств. Каждое множество отражает вершины
+        треугольников, которые должны быть окрашены цветом этой группы.
+        """
 
         def third_non_colored(triangle: Tuple) -> Optional[Tuple[int, Set]]:
+            """
+            Принимает один треугольник триангуляции (`triangle`) \n
+            *Если две вершины этого треугольника уже окрашены*, возвращает
+            вершину, которую нужно окрасить и множество, цветом которого
+            эту вершину нужно окрасить. \n
+            *Если в этом треугольнике окрашены 0, 1 или 3 вершины*, возвращает `None`.
+            """
             indexes = list(triangle)
             groups = [group_a, group_b, group_c]
 
@@ -468,7 +510,7 @@ rus_tex_template = TexTemplate(
 \setmainfont{Times New Roman}[Numbers = Lining]""",
 )
 
-# Координаты
+# Координаты многоугольника
 polygon_dots_positions_list = [
     [-2.36667, -0.31515],
     [-2.31818, 0.8303],
@@ -537,19 +579,30 @@ class Greetings(Scene):
 
 
 class TableOfContents(Scene):
+    """
+    Класс отображения содержания (плана работы).
+    """
+
     def _unpack(
-        self, subthemes: List, deep: int = 0, prev_num_sys: str = ""
+        self, subthemes: List, depth: int = 0, prev_num_sys: str = ""
     ) -> List[str]:
+        """
+        Функция распаковывает подтемы (`subthemes`) в массив строк, организую это в
+        многоуровневый список. Функция делает это рекурсивно, поэтому при вызове рекурсивно
+        (из функции) требуется дополнительно передать:
+        - `depth` - уровень в многоуровневом списке (чем больше, тем глубже).
+        - `prev_num_sys` - нумерация предыдущего уровня.
+        """
         plain_lines = []
         for i, subtheme in enumerate(subthemes, start=1):
             plain_lines.append(
-                ("\t" * deep) + prev_num_sys + str(i) + ". " + subtheme[0]
+                ("\t" * depth) + prev_num_sys + str(i) + ". " + subtheme[0]
             )
             if len(subtheme[1]) != 0:
                 plain_lines.extend(
                     self._unpack(
                         subthemes=subtheme[1],
-                        deep=deep + 1,
+                        depth=depth + 1,
                         prev_num_sys=f"{prev_num_sys}{i}.",
                     )
                 )
@@ -569,8 +622,7 @@ class TableOfContents(Scene):
 
 class ProblemDescription(Scene):
     """
-    Класс отрисовки картинной галереи, отображения поля видимости.
-    В течении действия рассказываю о сути проблемы.
+    Описание проблемы
     """
 
     def construct(self):
@@ -600,6 +652,7 @@ class ProblemDescription(Scene):
         polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
 
         # Смещение в центр
+        global comb_polygon
         comb_polygon = VGroup(polygon, polygon_dots_list)
         comb_polygon.move_to(ORIGIN)
 
@@ -728,11 +781,27 @@ class ProblemDescription(Scene):
 
 
 class Algorithm(Scene):
+    """
+    Показ работы алгоритма Стива Фиска
+    """
+
     def construct(self):
 
         # Обновление подтемы
         # global_subtheme_handler.init_subtheme(self)
         # global_subtheme_handler.update_subtheme(self)
+
+        # Добавление и сдвиг многоугольника
+        self.add(comb_polygon)
+        self.play(
+            AnimationGroup(
+                comb_polygon.animate.shift(RIGHT * config.frame_width / 4),
+                comb_polygon.animate.scale_to_fit_width(config.frame_width / 2 * 0.85),
+            )
+        )
+        comb_polygon[0].set_z_index(1)
+        comb_polygon[1].set_z_index(2)
+        self.wait()
 
         # Разделение экрана
         self.wait()
@@ -750,32 +819,6 @@ class Algorithm(Scene):
         self.play(
             AnimationGroup(
                 Create(divided_lines, lag_ratio=0), Write(titles, lag_ratio=0)
-            )
-        )
-        self.wait()
-
-        # Добавление многоугольника
-        polygon = (
-            Polygon(
-                *[[x, y, 0] for x, y in polygon_dots_positions_list],
-                color=WHITE,
-                stroke_width=DEFAULT_STROKE_WIDTH * 0.6,
-                z_index=1,
-            )
-            .scale_to_fit_width(config.frame_width / 2 * 0.85)
-            .move_to(RIGHT * config.frame_width / 4)
-        )
-        polygon_dots = VGroup(z_index=2)
-        for coords in polygon.get_vertices():
-            polygon_dots.add(
-                Dot(coords, color=polygon.get_color(), radius=DEFAULT_DOT_RADIUS * 0.6)
-            )
-        self.play(
-            LaggedStart(
-                Create(polygon_dots, rate_func=linear),
-                Create(polygon, rate_func=linear),
-                lag_ratio=0.1,
-                run_time=3,
             )
         )
         self.wait()
@@ -803,15 +846,16 @@ class Algorithm(Scene):
         steps.move_to(LEFT * config.frame_width / 4)
 
         # Шаг 1. Триангуляция
-        triangles_ids = global_solution.triangulate(polygon)
+        global triangles
+        triangles_ids = global_solution.triangulate(comb_polygon[0])
         triangles = VGroup()
 
         for triangle_id in triangles_ids:
             dot1_i, dot2_i, dot3_i = triangle_id
             triangle_coords = [
-                polygon_dots[dot1_i].get_center(),
-                polygon_dots[dot2_i].get_center(),
-                polygon_dots[dot3_i].get_center(),
+                comb_polygon[1][dot1_i].get_center(),
+                comb_polygon[1][dot2_i].get_center(),
+                comb_polygon[1][dot3_i].get_center(),
             ]
             triangles.add(
                 Polygon(
@@ -836,10 +880,10 @@ class Algorithm(Scene):
 
         for i in range(3):
             for vert_id in color_groups[i]:
-                vert = polygon_dots[vert_id]
+                vert = comb_polygon[1][vert_id]
                 animations.append(vert.animate.set_color(color_variants[i]))
 
-        polygon_dots.set_z_index(polygon.z_index + 1)
+        comb_polygon[1].set_z_index(comb_polygon[0].z_index + 1)
         self.play(
             LaggedStart(
                 *animations,
@@ -849,7 +893,7 @@ class Algorithm(Scene):
         )
 
         indications = []
-        for dot in polygon_dots:
+        for dot in comb_polygon[1]:
             indications.append(
                 Indicate(
                     dot,
@@ -862,6 +906,7 @@ class Algorithm(Scene):
         self.play(AnimationGroup(*indications))
         self.wait()
 
+        # Шаг 3. Отображение того, что вся галерея просматривается наблюдателями оной группы
         self.play(Write(steps[2]), run_time=2)
         self.play(triangles.animate.set_fill(PURE_BLUE, 0.75), run_time=2)
         self.play(triangles.animate.set_fill(PURE_GREEN, 0.75), run_time=2)
@@ -869,18 +914,147 @@ class Algorithm(Scene):
         self.play(triangles.animate.set_fill(None, 0), run_time=2)
         self.wait()
 
+        # Шаг 4. Группировка наблюдателей в группы по цветам и показ того, что n/3 с нижним
+        # округлением достаточно
         color_poly_groups: VGroup[VGroup[Dot]] = VGroup()
         color_poly_arranged_groups: VGroup[VGroup[Dot]] = VGroup()
         for color_group in color_groups:
             color_poly_group = VGroup()
             for vert_id in color_group:
-                color_poly_group.add(polygon_dots[vert_id])
+                color_poly_group.add(comb_polygon[1][vert_id])
             color_poly_groups.add(color_poly_group)
-            color_poly_arranged_groups.add(color_poly_groups[-1].copy().arrange_in_grid(cols=3))
+            color_poly_arranged_groups.add(
+                color_poly_groups[-1].copy().arrange_in_grid(cols=3)
+            )
 
         for i in color_poly_arranged_groups[1:]:
-            color_poly_arranged_groups[i].next_to(color_poly_arranged_groups[i - 1], buff=MED_LARGE_BUFF)
-        color_poly_arranged_groups.move_to(ORIGIN).to_edge(DOWN).shift(config.frame_width / 4)
+            color_poly_arranged_groups[i].next_to(
+                color_poly_arranged_groups[i - 1], buff=MED_LARGE_BUFF
+            )
+        color_poly_arranged_groups.move_to(ORIGIN).to_edge(DOWN).shift(
+            config.frame_width / 4
+        )
 
-        self.play(Write(steps[3]), Transform(color_poly_groups, color_poly_arranged_groups))
+        self.play(
+            Write(steps[3]), Transform(color_poly_groups, color_poly_arranged_groups)
+        )
         self.wait()
+
+        # Удаление
+        deletions: List[Animation] = []
+        for mobj in self.mobjects:
+            if mobj is comb_polygon:
+                continue
+            if isinstance(mobj, SVGMobject):
+                deletions.append(Unwrite(mobj))
+            elif isinstance(mobj, VMobject):
+                deletions.append(Uncreate(mobj))
+            else:
+                deletions.append(FadeOut(mobj))
+        self.play(AnimationGroup(*deletions))
+        self.wait()
+
+
+class Triangulation(Scene):
+    """
+    Подробное описание метода отрезания ушей.
+    """
+
+    def construct(self):
+        def degenerate_triangle(triangle: Polygon) -> None:
+            """
+            Функция анимационно удаляет треугольник (`triangle`). \n
+            Запускать, если построенный треугольник не подходит под определене уха
+            """
+            self.play(
+                Succession(triangle.animate.set_fill(RED), Uncreate(triangle)),
+            )
+            self.wait()
+
+        # Создание shapely-многоугольника
+        shapely_polygon = ShapelyPolygon(comb_polygon[0])
+
+        # Вывод определения
+        ear_defenition = Tex(
+            r"Вершна $v_i$ простого многоугольника $P$ называется \underline{\textbf{ухом}}, если диагональ $v_{i-1}v_{i+1}$ полностью лежит внутри $P$ и внутри $\triangleupv_{i-1}v_{i}v_{i+1}$ не лежит других вершин $P$"
+        )
+        self.play(Write(ear_defenition))
+        self.wait()
+        self.play(Unwrite(ear_defenition))
+        self.wait()
+
+        # Добавление и сдвиг многоугольника
+        self.add(comb_polygon)
+        self.play(
+            AnimationGroup(
+                comb_polygon.animate.move_to(ORIGIN),
+                comb_polygon.animate.scale_to_fit_height(config.frame_height * 0.9),
+            ),
+        )
+        self.wait()
+
+        # Добавление треугольников
+        for i in range(3):
+            shapely_triangle = ShapelyPolygon(
+                [comb_polygon[1][i + bias].get_center()[:2] for bias in (-1, 0, 1)]
+            )
+            manim_triangle = Polygon(
+                *[comb_polygon[1][i + bias].get_center() for bias in (-1, 0, 1)],
+                color=GRAY,
+                joint_type=LineJointType.BEVEL,
+            )
+            self.play(
+                Succession(
+                    Create(manim_triangle),
+                    manim_triangle.animate.set_fill(ORANGE, 0.35),
+                ),
+            )
+            self.wait()
+            is_ear = shapely_polygon.covers(shapely_triangle)
+            if is_ear:
+                self.play(manim_triangle.animate.set_fill(GREEN_E.darker(0.35)))
+                for vert in comb_polygon[1][i + 2 : i - 1]:
+                    vert.set_color(YELLOW)
+                    if shapely_triangle.covers(ShapelyPoint(vert.get_center()[:2])):
+                        self.wait()
+                        vert.set_color(RED)
+                        self.wait()
+                        degenerate_triangle(manim_triangle)
+                        vert.set_color(WHITE)
+                        break
+                    else:
+                        self.wait()
+                self.play(
+                    Succession(
+                        manim_triangle.animate.set_fill(GREEN),
+                        manim_triangle.animate.set_fill(opacity=0),
+                    )
+                )
+                cut_lines = VGroup(
+                    *[
+                        Line(
+                            comb_polygon[1][i].get_center(),
+                            comb_polygon[1][i + bias].get_center(),
+                        )
+                        for bias in (-1, 1)
+                    ]
+                )
+                cut_lines.add(comb_polygon[1][i].copy())
+                del comb_polygon[1][i]
+                self.play(Uncreate(cut_lines))
+                self.wait()
+
+            else:
+                degenerate_triangle(manim_triangle)
+
+        self.play(FadeOut(comb_polygon))
+
+        self.play(FadeIn(triangles[-1]))
+        self.wait()
+        self.play(AnimationGroup(FadeIn(comb_polygon), FadeIn(triangles)))
+        self.wait()
+
+
+class Tricoloring(Scene):
+    def construct(self):
+        pass
