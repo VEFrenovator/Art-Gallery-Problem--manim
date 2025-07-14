@@ -62,6 +62,20 @@ polygon_dots_positions_list = [
     [-2.7, -0.29697],
 ]
 
+dots = VGroup()
+for coords in polygon_dots_positions_list:
+    coords.append(0)
+    dots.add(Dot(coords, color=WHITE))
+
+comb_polygon = (
+    VGroup(
+        Polygon(*polygon_dots_positions_list, color=WHITE),
+        dots,
+    )
+    .move_to(ORIGIN)
+    .scale_to_fit_height(config.frame_height * 0.9)
+)
+
 
 class Greetings(Scene):
     """
@@ -150,41 +164,14 @@ class ProblemDescription(Scene):
         # ПОДТЕМА
         global_subtheme_handler.update_subtheme(self)
 
-        # МНОГОУГОЛЬНИК
-        # Множители маштаба
-        coord_multipliers = [1.5, 1.5, 0]
-
-        # Добавление видимых точек многоугольника
-        polygon_dots_list = VGroup()
-
-        for polygon_dot_position in polygon_dots_positions_list:
-            polygon_dot_position.append(0)
-            for i in range(3):
-                polygon_dot_position[i] = polygon_dot_position[i] * coord_multipliers[i]
-
-            polygon_dots_list.add(
-                Dot(
-                    point=polygon_dot_position,
-                    color=WHITE,
-                )
-            )
-
-        # Создание общей группы
-        polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
-
-        # Смещение в центр
-        global comb_polygon
-        comb_polygon = VGroup(polygon, polygon_dots_list)
-        comb_polygon.move_to(ORIGIN)
-
         # ВЫВОД
         self.wait()
 
         # Отрисовка многоугольника
         self.play(
             LaggedStart(
-                Create(polygon_dots_list, rate_func=linear),
-                Create(polygon, rate_func=linear),
+                Create(comb_polygon[0], rate_func=linear),
+                Create(comb_polygon[1], rate_func=linear),
                 lag_ratio=0.1,
                 run_time=3,
             )
@@ -236,7 +223,7 @@ class ProblemDescription(Scene):
         self.wait()
 
         # Отрисовка поля зрения
-        guard_view_coords = solution.calculate_visibility(polygon, guard)
+        guard_view_coords = solution.calculate_visibility(comb_polygon[0], guard)
         FOV_KWARGS = {
             "stroke_opacity": 0,
             "fill_color": GREEN,
@@ -252,14 +239,17 @@ class ProblemDescription(Scene):
 
         # Движение охранника
         updater_func = lambda mobj: mobj.set_points_as_corners(
-            [(x, y, 0) for x, y in solution.calculate_visibility(polygon, guard)]
+            [
+                (x, y, 0)
+                for x, y in solution.calculate_visibility(comb_polygon[0], guard)
+            ]
         )
         guard_view.add_updater(updater_func)
         path = VMobject(fill_opacity=0).set_points_smoothly(
             [
                 guard.get_center(),
-                polygon_dots_list[0].get_center() + DOWN * 0.5,
-                polygon_dots_list[-8].get_center() + RIGHT * 0.5 + UP,
+                comb_polygon[1][0].get_center() + DOWN * 0.5,
+                comb_polygon[1][-8].get_center() + RIGHT * 0.5 + UP,
             ]
         )
         self.play(MoveAlongPath(guard, path, run_time=5, rate_func=smooth))
@@ -271,7 +261,7 @@ class ProblemDescription(Scene):
             self.play(
                 AnimationGroup(
                     Indicate(polygon_dot, scale_factor=2, color=ORANGE, lag_ratio=0)
-                    for polygon_dot in polygon_dots_list
+                    for polygon_dot in comb_polygon[1]
                 )
             )
             self.wait(0.25)
@@ -279,26 +269,11 @@ class ProblemDescription(Scene):
 
         # Перемещения охранника в угол
         guard_view.add_updater(updater_func)
-        self.play(guard.animate.move_to(polygon_dots_list[-8].get_center()))
+        self.play(guard.animate.move_to(comb_polygon[1][-8].get_center()))
         guard_view.clear_updaters()
         self.wait()
 
         # Создание новых охранников, которые полностью осматривают многоугольник
-
-        # Удаление
-        self.play(
-            AnimationGroup(
-                Uncreate(guard_view),
-                Uncreate(guard),
-                LaggedStart(
-                    Create(polygon_dots_list, rate_func=lambda a: 1 - linear(a)),
-                    Create(polygon, rate_func=lambda a: 1 - linear(a)),
-                    lag_ratio=0.1,
-                ),
-                run_time=5,
-            )
-        )
-        self.wait()
 
 
 class Algorithm(Scene):
@@ -308,21 +283,22 @@ class Algorithm(Scene):
 
     def construct(self):
 
-        # Обновление подтемы
-        # global_subtheme_handler.init_subtheme(self)
-        # global_subtheme_handler.update_subtheme(self)
+        # Добавление подтемы
+        global_subtheme_handler.init_subtheme(self)
 
         # Добавление и сдвиг многоугольника
+
         self.add(comb_polygon)
         self.play(
-            AnimationGroup(
-                comb_polygon.animate.shift(RIGHT * config.frame_width / 4),
-                comb_polygon.animate.scale_to_fit_width(config.frame_width / 2 * 0.85),
-            )
+            comb_polygon.animate.scale_to_fit_width(config.frame_width / 2 * 0.85)
         )
+        self.play(comb_polygon.animate.move_to(RIGHT * config.frame_width / 4))
         comb_polygon[0].set_z_index(1)
         comb_polygon[1].set_z_index(2)
         self.wait()
+
+        # Обновление подтемы
+        global_subtheme_handler.update_subtheme(self)
 
         # Разделение экрана
         self.wait()
@@ -437,23 +413,25 @@ class Algorithm(Scene):
 
         # Шаг 4. Группировка наблюдателей в группы по цветам и показ того, что n/3 с нижним
         # округлением достаточно
-        color_poly_groups = VGroup()   # type: VGroup[VGroup[Dot]]
+        color_poly_groups = VGroup()  # type: VGroup[VGroup[Dot]]
         color_poly_arranged_groups = VGroup()  # type: VGroup[VGroup[Dot]]
+
         for color_group in color_groups:
             color_poly_group = VGroup()
             for vert_id in color_group:
-                color_poly_group.add(comb_polygon[1][vert_id])
+                color_poly_group.add(comb_polygon[1][vert_id].copy())
             color_poly_groups.add(color_poly_group)
             color_poly_arranged_groups.add(
-                color_poly_groups[-1].copy().arrange_in_grid(cols=3)
+                color_poly_groups[-1].arrange_in_grid(rows=3)
             )
 
-        for i in color_poly_arranged_groups[1:]:
-            color_poly_arranged_groups[i].next_to(
-                color_poly_arranged_groups[i - 1], buff=MED_LARGE_BUFF
-            )
+            if len(color_poly_arranged_groups) >= 2:
+                color_poly_arranged_groups[-1].next_to(
+                    color_poly_arranged_groups[-2], buff=MED_LARGE_BUFF
+                )
+
         color_poly_arranged_groups.move_to(ORIGIN).to_edge(DOWN).shift(
-            config.frame_width / 4
+            config.frame_width / 4 * RIGHT
         )
 
         self.play(
@@ -462,18 +440,22 @@ class Algorithm(Scene):
         self.wait()
 
         # Удаление
-        deletions: List[Animation] = []
-        for mobj in self.mobjects:
-            if mobj is comb_polygon:
-                continue
-            if isinstance(mobj, SVGMobject):
-                deletions.append(Unwrite(mobj))
-            elif isinstance(mobj, VMobject):
-                deletions.append(Uncreate(mobj))
-            else:
-                deletions.append(FadeOut(mobj))
-        self.play(AnimationGroup(*deletions))
-        self.wait()
+        # deletions: List[Animation] = []
+        # for mobj in self.mobjects:
+        #     if (
+        #         id(mobj) == id(comb_polygon)
+        #         or id(mobj) == id(global_subtheme_handler.current_out_texts)
+        #         or id(mobj) == id(global_subtheme_handler.current_out_lines)
+        #     ):
+        #         continue
+        #     if isinstance(mobj, SVGMobject):
+        #         deletions.append(Unwrite(mobj))
+        #     elif isinstance(mobj, VMobject):
+        #         deletions.append(Uncreate(mobj))
+        #     else:
+        #         deletions.append(FadeOut(mobj))
+        # self.play(AnimationGroup(*deletions))
+        # self.wait()
 
 
 class Triangulation(Scene):
@@ -492,20 +474,35 @@ class Triangulation(Scene):
             )
             self.wait()
 
+        # Обновление подтемы
+        global_subtheme_handler.update_subtheme(self)
+
         # Создание shapely-многоугольника
-        shapely_polygon = ShapelyPolygon(comb_polygon[0])
+        shapely_polygon = ShapelyPolygon(comb_polygon[0].get_vertices())
 
         # Вывод определения
         ear_defenition = Tex(
-            r"Вершна $v_i$ простого многоугольника $P$ называется \underline{\textbf{ухом}}, если диагональ $v_{i-1}v_{i+1}$ полностью лежит внутри $P$ и внутри $\triangleupv_{i-1}v_{i}v_{i+1}$ не лежит других вершин $P$"
+            r"Вершна $v_i$ простого многоугольника $P$ называется \underline{\textbf{ухом}}, если диагональ $v_{i-1}v_{i+1}$ полностью лежит внутри $P$ и внутри треугольника $v_{i-1}v_{i}v_{i+1}$ не лежит других вершин $P$",
+            tex_template=rus_tex_template
+        ).scale_to_fit_width(config.frame_width * 0.85)
+        self.play(
+            Succession(
+                Write(ear_defenition),
+                Circumscribe(ear_defenition, buff=MED_SMALL_BUFF)
+            )
         )
-        self.play(Write(ear_defenition))
         self.wait()
         self.play(Unwrite(ear_defenition))
         self.wait()
 
         # Добавление и сдвиг многоугольника
-        self.add(comb_polygon)
+        comb_polygon.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
+        self.play(
+            AnimationGroup(
+                Create(comb_polygon[1], rate_func=linear),
+                Create(comb_polygon[0], rate_func=linear),
+            )
+        )
         self.play(
             AnimationGroup(
                 comb_polygon.animate.move_to(ORIGIN),
