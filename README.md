@@ -53,7 +53,7 @@ There are no animations in this file because this module contains some functions
 - `tirangulate` - Performs polygon triangulation using the mapbox_earcut method. Returns a list of triangle vertex indices relative to the original polygon vertices. For example, (0, 1, 2) indicates a triangle formed by the first three vertices of the polygon.
 - `tricolor` – Assigns three colors to triangulation vertices such that each triangle contains all three colors. The polygon_verts_count parameter specifies the original polygon's vertex count. Returns a tuple of three sets, each containing vertices for a specific color group.
 
-## `subtheme_handler`
+## `subtheme_handler.py`
 > [!IMPORTANT]
 > This section is incomplete.
 
