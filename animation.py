@@ -3,7 +3,6 @@ manim: Основная анимационная библиотека.
     Примечание. Не обращай внимания на Wildcard предупреждение.
     Если написать import manim, то это не будет соответсвовать документации
     manim;
-shapely: Продвинутая геометрии библиотека. Использую для нахождения пересечений.
 """
 
 from typing import List
@@ -72,7 +71,7 @@ for coords in polygon_dots_positions_list:
 polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
 
 # Общая группа
-comb_polygon = VGroup(polygon, polygon_dots)
+comb_polygon = VGroup(polygon, polygon_dots).scale_to_fit_height(config.frame_height * 0.9).move_to(ORIGIN)
 
 # Треугольники триангуляции
 triangles_ids = solution.triangulate(polygon)
@@ -297,10 +296,11 @@ class ProblemDescription(Scene):
         # Удаление ненужного
         self.play(
             AnimationGroup(
-                Uncreate(guard_view),
+                guard_view.animate.set_fill(opacity=0),
                 Uncreate(guard),
             )
         )
+        self.remove(guard_view)
         self.wait()
 
 
@@ -315,7 +315,6 @@ class Algorithm(Scene):
         global comb_polygon
 
         # Добавление и сдвиг многоугольника
-
         self.add(comb_polygon)
         self.play(
             comb_polygon.animate.scale_to_fit_width(config.frame_width / 2 * 0.85)
@@ -368,6 +367,7 @@ class Algorithm(Scene):
         steps.move_to(LEFT * config.frame_width / 4)
 
         # Шаг 1. Триангуляция
+        triangles.move_to(polygon).match_height(polygon)
         self.play(
             Write(steps[0], run_time=2), Create(triangles, lag_ratio=0.2, run_time=4)
         )
@@ -460,7 +460,7 @@ class Algorithm(Scene):
         # Восстановление исходных точек многоугольника
         polygon = Polygon(
             *polygon_dots_positions_list, color=WHITE, z_index=1
-        ).scale_to_fit_height(config.frame_height * 0.9)
+        ).scale_to_fit_height(config.frame_height * 0.9).move_to(ORIGIN)
         polygon_dots = VGroup(z_index=2)
         for coords in polygon.get_vertices():
             polygon_dots.add(Dot(coords, color=WHITE))
@@ -505,7 +505,6 @@ class Triangulation(Scene):
         self.wait()
 
         # Добавление многоугольника
-        comb_polygon.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
         self.play(
             LaggedStart(
                 Create(polygon_dots, rate_func=linear),
@@ -647,9 +646,9 @@ class Triangulation(Scene):
             polygon_dots.add(Dot(coords, color=WHITE))
         comb_polygon = VGroup(polygon, polygon_dots)
 
-        triangles.move_to(ORIGIN).scale_to_fit_height(polygon.height)
+        triangles.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
         self.wait()
-        self.play(AnimationGroup(FadeIn(comb_polygon), FadeIn(triangles[:-1])))
+        self.play(AnimationGroup(FadeIn(comb_polygon), FadeIn(triangles)))
         self.wait()
 
 
