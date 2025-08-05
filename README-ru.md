@@ -12,8 +12,8 @@
 
 > [!NOTE]
 > Текст этого файла *доступен на других языках!*
-> - [🇬🇧English](https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/README.md)
-> - 🇷🇺Русский (текущий)
+> - [**ENG** English](https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/README.md)
+> - **RUS** Русский (текущий)
 
 
 > [!NOTE]
