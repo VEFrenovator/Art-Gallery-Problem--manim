@@ -11,6 +11,11 @@
 ---
 
 > [!NOTE]
+> This file is *translated on other languages*!
+> - **ENG** English (current)
+> - [**RUS** Русский](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/README-ru.md)
+
+> [!NOTE]
 > #### Versions sheet
 > This `Python v3.11` project uses the following libraries:
 > - `ManimCE v0.19.0`
@@ -20,7 +25,7 @@
 > - *Python built-ins: `typing`, `math`*
 
 > [!IMPORTANT]
-> All comments and texts are written in ***Russian***. The author welcomes pull requests with an English version.
+> All comments (in code) and texts (in animation) are written in ***Russian***. The author welcomes pull requests with an English version.
 
 # Installation
 ## Manim and other PyPI libraries
