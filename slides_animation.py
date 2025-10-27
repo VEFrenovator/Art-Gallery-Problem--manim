@@ -746,5 +746,54 @@ class Triangulation(Slide):
 
 
 class Tricoloring(Slide):
+    """
+    Подробное описание метода трираскраски полигона.
+    """
     def construct(self):
-        pass
+        # Глобальные переменные
+        global polygon
+        global polygon_dots
+        global comb_polygon
+
+        # # Отрисовка многоугольника И диагоналей триангуляции
+        # self.play(
+        #     LaggedStart(
+        #         Create(polygon_dots.set_z_index(2), rate_func=linear),
+        #         Create(polygon.set_z_index(1), rate_func=linear),
+        #         LaggedStart(
+        #             [Create(triangle.set_z_index(0)) for triangle in triangles[::-1]]
+        #         ),
+        #         run_time=3,
+        #         lag_ratio=0.1,
+        #     )
+        # )
+        # tripoly = VGroup(triangles, comb_polygon)
+        # self.next_slide()
+
+        # # Разделение экрана + сдвиг многоугольлника
+        # divided_line1 = Line(ORIGIN, DOWN * config.frame_height / 2 * 0.85, color=WHITE)
+        # divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
+        # divided_lines = VGroup(divided_line1, divided_line2).shift(RIGHT * config.frame_width / 8)
+        # self.play(
+        #     AnimationGroup(
+        #         tripoly.animate.scale_to_fit_width(
+        #             config.frame_width * (1 / 8 * 5) * 0.85
+        #         ).shift(LEFT * (config.frame_width / 4 - config.frame_width / (8 * 2))),
+        #         Create(divided_lines, lag_ratio=0),
+        #     ),
+        # )
+        # self.next_slide()
+
+        # Псевдокод
+        tricolor_pseudocode = Code(
+            "tricolor_pseudocode.py",
+            formatter_style="emacs",
+            language="python",
+            background="window",
+        ).scale_to_fit_width(
+            config.frame_width * 0.95
+        ).scale_to_fit_height(
+            config.frame_height * 0.95
+        )
+        self.play(Create(tricolor_pseudocode, run_time=4))
+        self.wait()
