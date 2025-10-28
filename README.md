@@ -83,6 +83,11 @@ Demonstrates polygon triangulation using the ear-clipping method.
 > Some texts in `animation.py` and `slides_animation.py` require LaTeX rendering. Review the full [Manim installation guide](https://docs.manim.community/en/stable/installation.html).
 
 ## `animation.py`
+
+> [!WARNING]
+> Some animations in this module are DEPRECATED. All changes and updates are located in `slides_animation.py`.
+
+
 Contains standard Manim animations. Render using the [ManimCE rendering process](https://github.com/ManimCommunity/manim?tab=readme-ov-file#usage) to output `.mp4` files.
 
 ## `slides_animation.py`

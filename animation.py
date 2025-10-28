@@ -1,10 +1,17 @@
 """
-manim: Основная анимационная библиотека.
-    Примечание. Не обращай внимания на Wildcard предупреждение.
-    Если написать import manim, то это не будет соответсвовать документации
-    manim;
+                                      !!!
+                                      !!!
+                                      !!!
+                                      !!!
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                --->>>  !!! DEPRECATION WARNING !!!  <<<---
+
+    Some animations in this module are DEPRECATED. All changes and updates
+                    are located in `slides_animation.py`.
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 """
 
+import warnings
 from typing import List
 from manim import *
 from shapely.geometry import (
@@ -14,6 +21,8 @@ from shapely.geometry import (
 import solution
 from subtheme_handler import SubthemeHandler
 
+# DEPRECATION WARNING
+warnings.warn("Some animations in this module are DEPRECATED. All changes and updates are located in `slides_animation.py`.", DeprecationWarning)
 
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()

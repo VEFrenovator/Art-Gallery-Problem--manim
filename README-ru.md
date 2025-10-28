@@ -44,7 +44,7 @@ pip install [...package name...]
 ## Установка файлов проекта
 Для установки всего проекта, запустите `git clone` или установите `raw`-файлы по отдельности. Для уточнения деталей, прочитайте [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
-# Описание классов анимации в `animation.py`
+# Описание классов анимации в `slides_animation.py`
 > [!TIP]
 > Порядок классов здесь и в коде таков же, как и их смысловой порядок. Используйте приведённый порядок при своём выступлении.
 
@@ -83,6 +83,10 @@ pip install [...package name...]
 > Некоторые тксты в `animation.py` и `slides_animation.py` требуют LaTeX рендера. Прчитайте весь [Manim installation guide](https://docs.manim.community/en/stable/installation.html).
 
 ## `animation.py`
+
+> [!WARNING]
+> Некоторые анимации в этом файле УСТАРЕЛИ. Все новые анимации и авторские обновления помещаются в `slides_animation.py`.
+
 Содержит стандартные анимации manim, описанные выше. Рендер в соответствии с [ManimCE rendering process](https://github.com/ManimCommunity/manim?tab=readme-ov-file#usage) выдаст`.mp4` файл.
 
 ## `slides_animation.py`
