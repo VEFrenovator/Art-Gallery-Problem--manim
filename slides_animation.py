@@ -6,6 +6,7 @@ manim: Основная анимационная библиотека.
 shapely: Продвинутая геометрии библиотека. Использую для нахождения пересечений.
 """
 
+# Импорт библиотек и модулей
 from typing import List
 from manim import *
 from manim_slides import Slide
@@ -16,10 +17,8 @@ from shapely.geometry import (
 import solution
 from subtheme_handler import SubthemeHandler
 
-
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
-
 
 # Русский шрифт
 rus_tex_template = TexTemplate(
@@ -73,7 +72,11 @@ for coords in polygon_dots_positions_list:
 polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
 
 # Общая группа
-comb_polygon = VGroup(polygon, polygon_dots).scale_to_fit_height(config.frame_height * 0.9).move_to(ORIGIN)
+comb_polygon = (
+    VGroup(polygon, polygon_dots)
+    .scale_to_fit_height(config.frame_height * 0.9)
+    .move_to(ORIGIN)
+)
 
 # Треугольники триангуляции
 triangles_ids = solution.triangulate(polygon)
@@ -96,7 +99,7 @@ for triangle_id in triangles_ids:
     )
 
 
-class Greetings(Slide): # type: ignore
+class Greetings(Slide):
     """
     Класс отображения приветственного текста (тема и автор).
     """
@@ -512,7 +515,7 @@ class Algorithm(Slide):
             elif isinstance(mobj, VMobject):
                 deletions.append(Uncreate(mobj))
             else:
-                deletions.append(FadeOut(mobj))   
+                deletions.append(FadeOut(mobj))
 
         self.wait()
         self.next_slide()
@@ -755,7 +758,49 @@ class Tricoloring(Slide):
         global polygon_dots
         global comb_polygon
 
-        # # Отрисовка многоугольника И диагоналей триангуляции
+        # Блок схема
+        block_diagram = (
+            ImageMobject("diagram (1).png")
+            .scale_to_fit_height(config.frame_height * 0.95)
+            .shift(UP * 2)
+        )
+
+        self.next_slide()
+        self.wait()
+        self.play(
+            AnimationGroup(
+                FadeIn(block_diagram),
+                block_diagram.animate.shift(DOWN * 2)
+            ),
+        )
+        self.wait()
+        self.next_slide()
+
+        # Псевдокод
+        pseudocode = Code(
+            "tricolor_pseudocode.py",
+            formatter_style="emacs",
+            language="python",
+            background="window",
+        ).next_to(config.right_side, RIGHT).scale_to_fit_width(config.frame_width / 2 * 1.4 * 0.95)
+        self.add(pseudocode)
+
+        self.wait()
+        self.play(AnimationGroup(
+            block_diagram.animate.scale(0.8).next_to(config.left_side, RIGHT, buff=SMALL_BUFF),
+            pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF)
+        ))
+        self.wait()
+        self.next_slide()
+        self.wait()
+        self.play(AnimationGroup(
+            block_diagram.animate.next_to(config.left_side, LEFT).scale(0.5),
+            pseudocode.animate.next_to(config.right_side, RIGHT).scale(0.5),
+        ))
+        self.remove(block_diagram, pseudocode)
+        self.next_slide()
+
+        # Отрисовка многоугольника И диагоналей триангуляции
         # self.play(
         #     LaggedStart(
         #         Create(polygon_dots.set_z_index(2), rate_func=linear),
@@ -784,16 +829,7 @@ class Tricoloring(Slide):
         # )
         # self.next_slide()
 
-        # Псевдокод
-        tricolor_pseudocode = Code(
-            "tricolor_pseudocode.py",
-            formatter_style="emacs",
-            language="python",
-            background="window",
-        ).scale_to_fit_width(
-            config.frame_width * 0.95
-        ).scale_to_fit_height(
-            config.frame_height * 0.95
-        )
-        self.play(Create(tricolor_pseudocode, run_time=4))
-        self.wait()
+
+class Examples(Slide):
+    def construct(self):
+        pass
