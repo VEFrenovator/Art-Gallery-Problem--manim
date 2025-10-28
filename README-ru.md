@@ -84,7 +84,7 @@ pip install [...package name...]
 
 ## `animation.py`
 
-> [!WARNING]
+> [!CAUTION]
 > Некоторые анимации в этом файле УСТАРЕЛИ. Все новые анимации и авторские обновления помещаются в `slides_animation.py`.
 
 Содержит стандартные анимации manim, описанные выше. Рендер в соответствии с [ManimCE rendering process](https://github.com/ManimCommunity/manim?tab=readme-ov-file#usage) выдаст`.mp4` файл.
