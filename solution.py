@@ -251,32 +251,6 @@ def tricolor(
     треугольников, которые должны быть окрашены цветом этой группы.
     """
 
-    def third_non_colored(triangle: Tuple) -> Optional[Tuple[int, Set]]:
-        """
-        Принимает один треугольник триангуляции (`triangle`) \n
-        *Если две вершины этого треугольника уже окрашены*, возвращает
-        вершину, которую нужно окрасить и множество, цветом которого
-        эту вершину нужно окрасить. \n
-        *Если в этом треугольнике окрашены 0, 1 или 3 вершины*, возвращает `None`.
-        """
-        indexes = list(triangle)
-        groups = [group_a, group_b, group_c]
-
-        i, j = 0, 0
-        while i < len(indexes):
-            while j < len(groups):
-                if indexes[i] in groups[j]:
-                    del indexes[i]
-                    del groups[j]
-                    break
-                j += 1
-            else:
-                i += 1
-            j = 0
-
-        if len(indexes) == 1:
-            return indexes[0], groups[0]
-
     group_a, group_b, group_c = set(), set(), set()
     group_a.add(triangles[0][0])
     group_b.add(triangles[0][1])
@@ -284,8 +258,35 @@ def tricolor(
 
     while len(group_a) + len(group_b) + len(group_c) < polygon_verts_count:
         for triangle in triangles:
-            non_colored = third_non_colored(triangle)
+            non_colored = third_non_colored(triangle, [group_a, group_b, group_c])
             if non_colored is not None:
                 index, group = non_colored
                 group.add(index)
     return group_a, group_b, group_c
+
+
+def third_non_colored(triangle: Tuple, groups: List) -> Optional[Tuple[int, Set]]:
+    """
+    Принимает один треугольник триангуляции (`triangle`) и
+    группы цветов (`groups`)\n
+    *Если две вершины этого треугольника уже окрашены*, возвращает
+    вершину, которую нужно окрасить и множество, цветом которого
+    эту вершину нужно окрасить. \n
+    *Если в этом треугольнике окрашены 0, 1 или 3 вершины*, возвращает `None`.
+    """
+    indexes = list(triangle)
+
+    i, j = 0, 0
+    while i < len(indexes):
+        while j < len(groups):
+            if indexes[i] in groups[j]:
+                del indexes[i]
+                del groups[j]
+                break
+            j += 1
+        else:
+            i += 1
+        j = 0
+
+    if len(indexes) == 1:
+        return indexes[0], groups[0]
