@@ -84,7 +84,7 @@ Demonstrates polygon triangulation using the ear-clipping method.
 
 ## `animation.py`
 
-> [!WARNING]
+> [!CAUTION]
 > Some animations in this module are DEPRECATED. All changes and updates are located in `slides_animation.py`.
 
 
