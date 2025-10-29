@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
+  <img src=https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/Readme_illustrations/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
   <br />
   <br />
   <i>Компьютерная анимация на ManimCE, объясняющая <b>решение Стива Фиска</b> для <b>задачи о картинной галерее</b></i>

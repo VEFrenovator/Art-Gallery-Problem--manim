@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
+  <img src=https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/Readme_illustrations/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
   <br />
   <br />
   <i>A ManimCE animation explaining <b>Fisk's proof</b> of the solution to the <b>Art Gallery Problem</b></i>
