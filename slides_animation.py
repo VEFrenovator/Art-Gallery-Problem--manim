@@ -1,9 +1,23 @@
 """
-manim: Основная анимационная библиотека.
-    Примечание. Не обращай внимания на Wildcard предупреждение.
-    Если написать import manim, то это не будет соответсвовать документации
-    manim;
-shapely: Продвинутая геометрии библиотека. Использую для нахождения пересечений.
+*Общее назначение*\n
+`slides_animation` - главный модуль анимации. Сюда вносятся все авторские правки и нововведения.
+
+---
+
+*Описание (план) модуля (по классам)*:
+
+- `{main}`: импорт библиотек, объявление TexTemplate для русского шрифта, объявление многоугольника
+(галереи), а также треугольников триангуляции.\n
+- `Greetings`: заставка (тема и автор).\n
+- `TableOfContents`: план (содержание) выступления.\n
+- `ProblemDescription`: описания теоремы, постановка проблемы.\n
+- `Algorithm`: описание алгоритма решения Стива Фиска.\n
+- `Triangulation`: описание алгоритма триангуляции методом отрезания ушей.\n
+- `Tricoloring`: описание алгоритма жадной трираскраски.\n
+- `Examples`: примеры работы алгоритма при решении реальных задач расстановки камер
+видеонаблюдения.\n
+- `Conclusion`: заключение, бегущая строка, содержащая код анимации.\n
+- `ClosingRemarks`: заставка заключения (спасибо за внимание).\n
 """
 
 # Импорт библиотек и модулей
@@ -99,12 +113,12 @@ for triangle_id in triangles_ids:
     )
 
 
-class Greetings(Slide):
+class Greetings(Slide):  # pylint: disable=inherit-non-class
     """
     Класс отображения приветственного текста (тема и автор).
     """
 
-    def construct(self):
+    def construct(self):    # pylint: disable=missing-function-docstring
         self.wait()
 
         # Приветственный текст
@@ -134,7 +148,7 @@ class Greetings(Slide):
                 mobject=text_out_group,
                 buff=MED_SMALL_BUFF,
             ),
-            Wait()
+            Wait(),
         )
 
         self.wait()
@@ -144,12 +158,12 @@ class Greetings(Slide):
         self.play(AnimationGroup(Unwrite(text_out_group), lag_ratio=out_lag_ratio))
 
 
-class TableOfContents(Slide):
+class TableOfContents(Slide):  # pylint: disable=inherit-non-class
     """
     Класс отображения содержания (плана работы).
     """
 
-    def _unpack(
+    def get_table_of_contents(
         self, subthemes: List, depth: int = 0, prev_num_sys: str = ""
     ) -> List[str]:
         """
@@ -166,7 +180,7 @@ class TableOfContents(Slide):
             )
             if len(subtheme[1]) != 0:
                 plain_lines.extend(
-                    self._unpack(
+                    self.get_table_of_contents(
                         subthemes=subtheme[1],
                         depth=depth + 1,
                         prev_num_sys=f"{prev_num_sys}{i}.",
@@ -174,13 +188,15 @@ class TableOfContents(Slide):
                 )
         return plain_lines
 
-    def construct(self):
+    def construct(self):    # pylint: disable=missing-function-docstring
         self.next_slide()
         self.wait()
 
         title = Title("Содержание", tex_template=rus_tex_template)
         body = Paragraph(
-            "\n".join(self._unpack(global_subtheme_handler.subtheme_variants))
+            "\n".join(
+                self.get_table_of_contents(global_subtheme_handler.subtheme_variants)
+            )
         ).scale_to_fit_width(config.frame_width * 0.85)
 
         self.play((Succession(Write(title), Write(body))))
@@ -192,12 +208,12 @@ class TableOfContents(Slide):
         self.play(LaggedStart(Unwrite(body), Unwrite(title), lag_ratio=0.3))
 
 
-class ProblemDescription(Slide):
+class ProblemDescription(Slide):  # pylint: disable=inherit-non-class
     """
     Описание проблемы
     """
 
-    def construct(self):
+    def construct(self):    # pylint: disable=missing-function-docstring
         self.next_slide()
         self.wait()
 
@@ -233,7 +249,7 @@ class ProblemDescription(Slide):
                 flash_radius=guard.radius + 0.01,
                 color=guard.get_color(),
             ),
-            Wait()
+            Wait(),
         )
 
         # Показ того, что он смотрит на 360
@@ -272,7 +288,7 @@ class ProblemDescription(Slide):
 
         # Отрисовка поля зрения
         guard_view_coords = solution.calculate_visibility(polygon, guard)
-        FOV_KWARGS = {
+        FOV_KWARGS = {    # pylint: disable=invalid-name
             "stroke_opacity": 0,
             "fill_color": GREEN,
             "fill_opacity": 1,
@@ -341,19 +357,19 @@ class ProblemDescription(Slide):
 
         self.play(
             AnimationGroup(
-                guard_view.animate.set_fill(opacity=0),
+                FadeOut(guard_view.set_z_index(-1)),
                 Uncreate(guard),
             )
         )
         self.remove(guard_view)
 
 
-class Algorithm(Slide):
+class Algorithm(Slide):  # pylint: disable=inherit-non-class
     """
     Показ работы алгоритма Стива Фиска
     """
 
-    def construct(self):
+    def construct(self):    # pylint: disable=missing-function-docstring
         self.next_slide()
         self.wait()
 
@@ -364,9 +380,12 @@ class Algorithm(Slide):
         # Добавление и сдвиг многоугольника
         self.add(comb_polygon)
         self.play(
-            comb_polygon.animate.scale_to_fit_width(
-                config.frame_width / 2 * 0.85
-            ).move_to(RIGHT * config.frame_width / 4)
+            (
+                comb_polygon.animate.scale_to_fit_width(
+                    config.frame_width / 2 * 0.85
+                ).move_to(RIGHT * config.frame_width / 4)
+            ),
+            lag_ratio=0,
         )
         polygon.set_z_index(1)
         polygon_dots.set_z_index(2)
@@ -392,10 +411,10 @@ class Algorithm(Slide):
 
         # Создание нумерованного списка шагов
         steps_strs = [
-            r"Триангулировать многоугольник (без добавления новых вершин).",
-            r"Раскрасить вершины в три цвета так, чтобы\\каждый треугольник был окрашен всеми тремя цветами.",
-            r"Теперь весь многоугольник просматривается\\всеми охранниками одной группы.",
-            r"Цвет с меньшим количеством вершин образует\\множество максимум $\lfloor n/3 \rfloor$ вершин.",
+            r"Триангулировать многоугольник\\(без добавления новых вершин).",
+            r"Раскрасить вершины в три цвета\\так, чтобы каждый треугольник\\был окрашен всеми тремя цветами.",
+            r"Теперь весь многоугольник\\просматривается всеми охранниками\\одной группы.",
+            r"Цвет с меньшим количеством\\вершин образует множество максимум\\$\lfloor n/3 \rfloor$ вершин.",
         ]
         steps = VGroup()
         for i, line in enumerate(steps_strs):
@@ -403,12 +422,15 @@ class Algorithm(Slide):
                 Tex(
                     f"{str(i + 1)}. {line}",
                     tex_template=rus_tex_template,
-                    should_center=False,
                 )
             )
             if len(steps) >= 2:
-                steps[i].next_to(steps[i - 1], DOWN)
-        steps.next_to(config.left_side, RIGHT).scale_to_fit_width(config.frame_width / 2 * 0.9)
+                steps[i].next_to(
+                    steps[i - 1], DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER * 1.5
+                )
+        steps.move_to(ORIGIN).shift(LEFT * config.frame_width / 4).scale_to_fit_width(
+            config.frame_width / 2 * 0.9
+        )
 
         # Шаг 1. Триангуляция
         self.wait()
@@ -523,34 +545,41 @@ class Algorithm(Slide):
         self.play(AnimationGroup(*deletions))
 
         # Восстановление исходных точек многоугольника
-        polygon = Polygon(
-            *polygon_dots_positions_list, color=WHITE, z_index=1
-        ).scale_to_fit_height(config.frame_height * 0.9).move_to(ORIGIN)
+        polygon = (
+            Polygon(*polygon_dots_positions_list, color=WHITE, z_index=1)
+            .scale_to_fit_height(config.frame_height * 0.9)
+            .move_to(ORIGIN)
+        )
         polygon_dots = VGroup(z_index=2)
         for coords in polygon.get_vertices():
             polygon_dots.add(Dot(coords, color=WHITE))
 
 
-class Triangulation(Slide):
+class Triangulation(Slide):  # pylint: disable=inherit-non-class
     """
     Подробное описание метода отрезания ушей.
     """
 
-    def construct(self):
+    def construct(self):    # pylint: disable=missing-function-docstring
         def degenerate_triangle(triangle: Polygon, is_ear: bool) -> None:
             """
-            Функция анимационно удаляет треугольник (`triangle`).
+            Функция анимационно удаляет треугольник (`triangle`), в случае, если это ухо
+            (`is_ear==True`), оставляет его "фантом" (полупрозрачную копию).
             """
             if is_ear:
-                self.wait()
-                self.play(triangle.animate.set_fill(GREEN))
-                self.wait()
-                self.next_slide()
+                self.play(triangle.animate.set_fill(GREEN), run_time=0.5)
+                fantom = (
+                    triangle.copy()
+                    .set_stroke(BLUE_C, DEFAULT_STROKE_WIDTH / 2, 0.7)
+                    .set_fill(opacity=0)
+                    .set_z_index(-2)
+                )
+                self.add(fantom)
+                fantoms.add(fantom)
             else:
-                self.play(triangle.animate.set_fill(RED))
-            self.play(triangle.animate.set_fill(opacity=0))
-            self.play(Uncreate(triangle))
-            self.wait()
+                self.play(triangle.animate.set_fill(RED), run_time=0.5)
+            self.play(triangle.animate.set_fill(opacity=0), run_time=0.5)
+            self.play(Uncreate(triangle), run_time=1)
 
         self.next_slide()
         self.wait()
@@ -559,7 +588,7 @@ class Triangulation(Slide):
         global polygon_dots
         global comb_polygon
 
-        # Вывод определения
+        # Определение
         ear_defenition = Tex(
             r"Вершна $v_i$ простого многоугольника $P$ называется \underline{\textbf{ухом}}, если диагональ $v_{i-1}v_{i+1}$ полностью лежит внутри $P$ и внутри треугольника $v_{i-1}v_{i}v_{i+1}$ не лежит других вершин $P$",
             tex_template=rus_tex_template,
@@ -573,14 +602,12 @@ class Triangulation(Slide):
 
         self.play(Circumscribe(ear_defenition, buff=MED_SMALL_BUFF))
 
-        self.wait()
         self.next_slide()
         self.wait()
 
         self.play(Unwrite(ear_defenition))
 
         # Добавление многоугольника
-        self.wait()
         self.next_slide()
         self.wait()
 
@@ -597,12 +624,15 @@ class Triangulation(Slide):
         shapely_polygon = ShapelyPolygon(polygon.get_vertices())
 
         # Добавление треугольников
-        self.wait()
         self.next_slide()
         self.wait()
 
         i = 0
-        for _ in range(2):
+        fantoms = VGroup()  # Группа треугольников, создаваемых в процессе анимации. Подробнее
+        # см. функцию degenerate_triangle
+
+        while len(polygon_dots) > 3:
+            i %= len(polygon_dots)
 
             # Shapely треугольник для геометрических вычислений
             shapely_triangle = ShapelyPolygon(
@@ -626,7 +656,13 @@ class Triangulation(Slide):
 
             # Закрашиваем вершину, которую сейчас проверяем
             polygon_dots[i].set_z_index(3)
-            self.play(polygon_dots[i].animate.set_color(PURPLE_E))
+            self.play(
+                AnimationGroup(
+                    polygon_dots[i].animate.set_color(PURPLE_E),
+                    Indicate(polygon_dots[i], color=PURPLE_E),
+                ),
+                run_time=0.5,
+            )
 
             # Вывод manim треугольника
             self.play(
@@ -634,21 +670,15 @@ class Triangulation(Slide):
                     Create(manim_triangle),
                     manim_triangle.animate.set_fill(ORANGE, 1),
                 ),
+                run_time=1,
             )
-            self.wait()
-            self.next_slide()
-            self.wait()
 
             # Проверка 1. Возможное ухо внутри многоугольника?
             is_ear = shapely_polygon.covers(shapely_triangle)
 
             # -> Если да, закрашиваем цветом, ближе к жёлтому, запускаем проверку 2
             if is_ear:
-                self.play(manim_triangle.animate.set_fill(YELLOW))
-
-                self.wait()
-                self.next_slide()
-                self.wait()
+                self.play(manim_triangle.animate.set_fill(YELLOW), run_time=0.5)
 
                 # Проверка 2. Внутри возможного уха лежит(-ат) точки многоугольника?
                 has_vert_inside = False
@@ -656,22 +686,19 @@ class Triangulation(Slide):
                     vert.set_color(ORANGE).scale(2)
                     # Если точка внутри, останавливаем цикл и выходим
                     if shapely_triangle.covers(ShapelyPoint(vert.get_center()[:2])):
-                        self.wait()
                         has_vert_inside = True
                         break
                     # Если не внутри, идём дальше
                     else:
-                        self.wait(0.15)
+                        self.wait(0.1)
                         vert.set_color(WHITE).scale(0.5)
 
                 # Если была точка внутри, удаляем треугольник и идём дальше
                 if has_vert_inside:
-                    self.wait()
-                    self.next_slide()
-                    self.wait()
                     vert.set_color(RED)
-                    degenerate_triangle(manim_triangle, is_ear=False)
+                    self.wait(0.5)
                     vert.set_color(WHITE).scale(0.5)
+                    degenerate_triangle(manim_triangle, is_ear=False)
                     i += 1
                     continue
 
@@ -703,10 +730,11 @@ class Triangulation(Slide):
                         )
                     )
                 self.play(
-                    Succession(
+                    LaggedStart(
                         Transform(polygon, new_polygon),
                         Uncreate(lines_to_cut, lag_ratio=0),
-                        Uncreate(polygon_dots[i]),
+                        ShrinkToCenter(polygon_dots[i]),
+                        lag_ratio=0.5,
                     )
                 )
 
@@ -721,37 +749,33 @@ class Triangulation(Slide):
                 i += 1
 
             # Удаляем раскраску у главной вершины
-            self.play(polygon_dots.animate.set_color(WHITE))
+            self.play(polygon_dots.animate.set_color(WHITE), run_time=0.4)
 
-        # Трюк: делаем плавное исчезновение, а потом результат триангуляции
-        self.wait()
+        # Итог: на экране только фантомы и треугольник-полигон (белый)
+        # Делаем полигон фантомом
         self.next_slide()
-        self.wait()
+        self.next_slide()   # Двойной next_slide, чтобы сделать паузу
+        self.play(AnimationGroup(
+            ShrinkToCenter(polygon_dots[0]),
+            ShrinkToCenter(polygon_dots[1]),
+            ShrinkToCenter(polygon_dots[2]),
+            polygon.animate.set_stroke(BLUE_C, DEFAULT_STROKE_WIDTH / 2, 0.7),
+        ))
+        fantoms.add(polygon)
 
-        comb_polygon = VGroup(polygon, polygon_dots)
-        self.play(FadeOut(comb_polygon))
-
-        # P.S. Но не забываем восстановить полигон и точки
-        polygon = (
-            Polygon(*polygon_dots_positions_list, color=WHITE, z_index=1)
-            .move_to(ORIGIN)
-            .scale_to_fit_height(config.frame_height * 0.9)
-        )
-        polygon_dots = VGroup(z_index=2)
-        for coords in polygon.get_vertices():
-            polygon_dots.add(Dot(coords, color=WHITE))
-        comb_polygon = VGroup(polygon, polygon_dots)
-
-        triangles.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
-        self.wait()
-        self.play(AnimationGroup(FadeIn(comb_polygon), FadeIn(triangles)))
+        # Отчистка экрана
+        self.next_slide()
+        self.play(LaggedStart(
+            *[Uncreate(fantom)  for fantom in fantoms]
+        ))
 
 
-class Tricoloring(Slide):
+class Tricoloring(Slide):  # pylint: disable=inherit-non-class
     """
     Подробное описание метода трираскраски полигона.
     """
-    def construct(self):
+
+    def construct(self):    # pylint: disable=missing-function-docstring
         # Блок схема
         block_diagram = (
             ImageMobject("diagram (1).png")
@@ -763,34 +787,43 @@ class Tricoloring(Slide):
         self.wait()
         self.play(
             AnimationGroup(
-                FadeIn(block_diagram),
-                block_diagram.animate.shift(DOWN * 2)
+                FadeIn(block_diagram), block_diagram.animate.shift(DOWN * 2)
             ),
         )
         self.wait()
         self.next_slide()
 
         # Псевдокод
-        pseudocode = Code(
-            "tricolor_pseudocode.py",
-            formatter_style="emacs",
-            language="python",
-            background="window",
-        ).next_to(config.right_side, RIGHT).scale_to_fit_width(config.frame_width / 2 * 1.4 * 0.95)
+        pseudocode = (
+            Code(
+                "tricolor_pseudocode.py",
+                formatter_style="emacs",
+                language="python",
+                background="window",
+            )
+            .next_to(config.right_side, RIGHT)
+            .scale_to_fit_width(config.frame_width / 2 * 1.4 * 0.95)
+        )
         self.add(pseudocode)
 
         self.wait()
-        self.play(AnimationGroup(
-            block_diagram.animate.scale(0.8).next_to(config.left_side, RIGHT, buff=SMALL_BUFF),
-            pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF)
-        ))
+        self.play(
+            AnimationGroup(
+                block_diagram.animate.scale(0.8).next_to(
+                    config.left_side, RIGHT, buff=SMALL_BUFF
+                ),
+                pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
+            )
+        )
         self.wait()
         self.next_slide()
         self.wait()
-        self.play(AnimationGroup(
-            block_diagram.animate.next_to(config.left_side, LEFT).scale(0.8),
-            pseudocode.animate.next_to(config.right_side, RIGHT).scale(0.8),
-        ))
+        self.play(
+            AnimationGroup(
+                block_diagram.animate.next_to(config.left_side, LEFT).scale(0.8),
+                pseudocode.animate.next_to(config.right_side, RIGHT).scale(0.8),
+            )
+        )
         self.remove(block_diagram, pseudocode)
         self.next_slide()
 
@@ -799,7 +832,12 @@ class Tricoloring(Slide):
         self.play(
             LaggedStart(
                 Create(polygon_dots.set_z_index(2), rate_func=linear),
-                Create(polygon.set_z_index(1).set_stroke(width=DEFAULT_STROKE_WIDTH / 2, opacity=0.5), rate_func=linear),
+                Create(
+                    polygon.set_z_index(1).set_stroke(
+                        width=DEFAULT_STROKE_WIDTH / 2, opacity=0.5
+                    ),
+                    rate_func=linear,
+                ),
                 LaggedStart(
                     [Create(triangle.set_z_index(0)) for triangle in triangles[::-1]]
                 ),
@@ -822,38 +860,61 @@ class Tricoloring(Slide):
             if group is color_c:
                 return PURE_BLUE
 
-
         color_a, color_b, color_c = set(), set(), set()
         color_a.add(triangles_ids[0][0])
         color_b.add(triangles_ids[0][1])
         color_c.add(triangles_ids[0][2])
 
         self.wait()
-        self.play(Succession(
-            triangles[0].animate.set_color(YELLOW).set_stroke(width=DEFAULT_STROKE_WIDTH * 1.5),
-            polygon_dots[triangles_ids[0][0]].animate.set_color(PURE_RED),
-            polygon_dots[triangles_ids[0][1]].animate.set_color(PURE_GREEN),
-            polygon_dots[triangles_ids[0][2]].animate.set_color(PURE_BLUE),
-            run_time=1,
-        ))
-        self.play(triangles[0].animate.set_color(GRAY).set_stroke(width=DEFAULT_STROKE_WIDTH * 0.5), run_time=1/4)
+        self.play(
+            Succession(
+                triangles[0]
+                .animate.set_color(YELLOW)
+                .set_stroke(width=DEFAULT_STROKE_WIDTH * 1.5),
+                polygon_dots[triangles_ids[0][0]].animate.set_color(PURE_RED),
+                polygon_dots[triangles_ids[0][1]].animate.set_color(PURE_GREEN),
+                polygon_dots[triangles_ids[0][2]].animate.set_color(PURE_BLUE),
+                run_time=1,
+            )
+        )
+        self.play(
+            triangles[0]
+            .animate.set_color(GRAY)
+            .set_stroke(width=DEFAULT_STROKE_WIDTH * 0.5),
+            run_time=1 / 4,
+        )
         self.wait()
         self.next_slide()
 
-        while len(color_a) + len(color_b) + len(color_c) < len(polygon_dots_positions_list):
+        while len(color_a) + len(color_b) + len(color_c) < len(
+            polygon_dots_positions_list
+        ):
             for triangle_id, triangle in zip(triangles_ids, triangles):
-                non_colored = solution.third_non_colored(triangle_id, [color_a, color_b, color_c])
+                non_colored = solution.third_non_colored(
+                    triangle_id, [color_a, color_b, color_c]
+                )
 
                 if non_colored is not None:
                     index, group = non_colored
                     group.add(index)
 
-                    self.play(Succession(
-                        triangle.animate.set_color(YELLOW).set_stroke(width=DEFAULT_STROKE_WIDTH * 1.5),
-                        polygon_dots[index].animate.set_color(get_color_of_group(group)),
-                        run_time=1
-                    ))
-                    self.play(triangle.animate.set_color(GRAY).set_stroke(width=DEFAULT_STROKE_WIDTH * 0.5), run_time=1/4)
+                    self.play(
+                        Succession(
+                            triangle.animate.set_color(YELLOW).set_stroke(
+                                width=DEFAULT_STROKE_WIDTH * 1.5
+                            ),
+                            polygon_dots[index].animate.set_color(
+                                get_color_of_group(group)
+                            ),
+                            run_time=1,
+                        )
+                    )
+                    self.play(
+                        triangle.animate.set_color(GRAY).set_stroke(
+                            width=DEFAULT_STROKE_WIDTH * 0.5
+                        ),
+                        run_time=1 / 4,
+                    )
         self.wait()
         self.next_slide()
 
@@ -872,8 +933,8 @@ class Tricoloring(Slide):
         self.wait()
 
 
-class Examples(Slide):
-    def construct(self):
+class Examples(Slide):  # pylint: disable=inherit-non-class
+    def construct(self):    # pylint: disable=missing-function-docstring
         pass
 
 
@@ -903,3 +964,19 @@ class Examples(Slide):
 #     ),
 # )
 # self.next_slide()
+
+
+# # P.S. Но не забываем восстановить полигон и точки
+# polygon = (
+#     Polygon(*polygon_dots_positions_list, color=WHITE, z_index=1)
+#     .move_to(ORIGIN)
+#     .scale_to_fit_height(config.frame_height * 0.9)
+# )
+# polygon_dots = VGroup(z_index=2)
+# for coords in polygon.get_vertices():
+#     polygon_dots.add(Dot(coords, color=WHITE))
+# comb_polygon = VGroup(polygon, polygon_dots)
+
+# triangles.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
+# self.wait()
+# self.play(AnimationGroup(FadeIn(comb_polygon), FadeIn(triangles)))
