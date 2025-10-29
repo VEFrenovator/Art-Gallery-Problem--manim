@@ -7,7 +7,7 @@ shapely: Продвинутая геометрии библиотека. Исп�
 """
 
 # Импорт библиотек и модулей
-from typing import List
+from typing import List, Set
 from manim import *
 from manim_slides import Slide
 from shapely.geometry import (
@@ -70,7 +70,7 @@ for coords in polygon_dots_positions_list:
 
 # Многоугольник
 polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
-
+VMobject()
 # Общая группа
 comb_polygon = (
     VGroup(polygon, polygon_dots)
@@ -364,9 +364,10 @@ class Algorithm(Slide):
         # Добавление и сдвиг многоугольника
         self.add(comb_polygon)
         self.play(
-            comb_polygon.animate.scale_to_fit_width(config.frame_width / 2 * 0.85)
+            comb_polygon.animate.scale_to_fit_width(
+                config.frame_width / 2 * 0.85
+            ).move_to(RIGHT * config.frame_width / 4)
         )
-        self.play(comb_polygon.animate.move_to(RIGHT * config.frame_width / 4))
         polygon.set_z_index(1)
         polygon_dots.set_z_index(2)
         self.wait()
@@ -391,10 +392,10 @@ class Algorithm(Slide):
 
         # Создание нумерованного списка шагов
         steps_strs = [
-            "Триангулировать многоугольник (без добавления новых вершин).",
-            "Раскрасить вершины в три цвета так, чтобы каждый треугольник был окрашен всеми тремя цветами.",
-            "Теперь весь многоугольник просматривается всеми охранниками одной группы.",
-            r"Цвет с меньшим количеством вершин образует множество максимум $\lfloor n/3 \rfloor$ вершин.",
+            r"Триангулировать многоугольник (без добавления новых вершин).",
+            r"Раскрасить вершины в три цвета так, чтобы\\каждый треугольник был окрашен всеми тремя цветами.",
+            r"Теперь весь многоугольник просматривается\\всеми охранниками одной группы.",
+            r"Цвет с меньшим количеством вершин образует\\множество максимум $\lfloor n/3 \rfloor$ вершин.",
         ]
         steps = VGroup()
         for i, line in enumerate(steps_strs):
@@ -403,13 +404,11 @@ class Algorithm(Slide):
                     f"{str(i + 1)}. {line}",
                     tex_template=rus_tex_template,
                     should_center=False,
-                    width=config.frame_width / 2 * 0.9,
-                    height=config.frame_height / 4 * 0.7,
                 )
             )
             if len(steps) >= 2:
                 steps[i].next_to(steps[i - 1], DOWN)
-        steps.move_to(LEFT * config.frame_width / 4)
+        steps.next_to(config.left_side, RIGHT).scale_to_fit_width(config.frame_width / 2 * 0.9)
 
         # Шаг 1. Триангуляция
         self.wait()
@@ -753,11 +752,6 @@ class Tricoloring(Slide):
     Подробное описание метода трираскраски полигона.
     """
     def construct(self):
-        # Глобальные переменные
-        global polygon
-        global polygon_dots
-        global comb_polygon
-
         # Блок схема
         block_diagram = (
             ImageMobject("diagram (1).png")
@@ -794,42 +788,118 @@ class Tricoloring(Slide):
         self.next_slide()
         self.wait()
         self.play(AnimationGroup(
-            block_diagram.animate.next_to(config.left_side, LEFT).scale(0.5),
-            pseudocode.animate.next_to(config.right_side, RIGHT).scale(0.5),
+            block_diagram.animate.next_to(config.left_side, LEFT).scale(0.8),
+            pseudocode.animate.next_to(config.right_side, RIGHT).scale(0.8),
         ))
         self.remove(block_diagram, pseudocode)
         self.next_slide()
 
         # Отрисовка многоугольника И диагоналей триангуляции
-        # self.play(
-        #     LaggedStart(
-        #         Create(polygon_dots.set_z_index(2), rate_func=linear),
-        #         Create(polygon.set_z_index(1), rate_func=linear),
-        #         LaggedStart(
-        #             [Create(triangle.set_z_index(0)) for triangle in triangles[::-1]]
-        #         ),
-        #         run_time=3,
-        #         lag_ratio=0.1,
-        #     )
-        # )
-        # tripoly = VGroup(triangles, comb_polygon)
-        # self.next_slide()
+        self.wait()
+        self.play(
+            LaggedStart(
+                Create(polygon_dots.set_z_index(2), rate_func=linear),
+                Create(polygon.set_z_index(1).set_stroke(width=DEFAULT_STROKE_WIDTH / 2, opacity=0.5), rate_func=linear),
+                LaggedStart(
+                    [Create(triangle.set_z_index(0)) for triangle in triangles[::-1]]
+                ),
+                run_time=3,
+                lag_ratio=0.1,
+            )
+        )
+        self.next_slide()
 
-        # # Разделение экрана + сдвиг многоугольлника
-        # divided_line1 = Line(ORIGIN, DOWN * config.frame_height / 2 * 0.85, color=WHITE)
-        # divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
-        # divided_lines = VGroup(divided_line1, divided_line2).shift(RIGHT * config.frame_width / 8)
-        # self.play(
-        #     AnimationGroup(
-        #         tripoly.animate.scale_to_fit_width(
-        #             config.frame_width * (1 / 8 * 5) * 0.85
-        #         ).shift(LEFT * (config.frame_width / 4 - config.frame_width / (8 * 2))),
-        #         Create(divided_lines, lag_ratio=0),
-        #     ),
-        # )
-        # self.next_slide()
+        # Нативный показ работы работы алгоритма трираскраски
+        def get_color_of_group(group: Set) -> ManimColor:
+            """
+            Функция, возвращающая `ManimColor` в соответствии с
+            именем переменной группы (`group`)
+            """
+            if group is color_a:
+                return PURE_RED
+            if group is color_b:
+                return PURE_GREEN
+            if group is color_c:
+                return PURE_BLUE
+
+
+        color_a, color_b, color_c = set(), set(), set()
+        color_a.add(triangles_ids[0][0])
+        color_b.add(triangles_ids[0][1])
+        color_c.add(triangles_ids[0][2])
+
+        self.wait()
+        self.play(Succession(
+            triangles[0].animate.set_color(YELLOW).set_stroke(width=DEFAULT_STROKE_WIDTH * 1.5),
+            polygon_dots[triangles_ids[0][0]].animate.set_color(PURE_RED),
+            polygon_dots[triangles_ids[0][1]].animate.set_color(PURE_GREEN),
+            polygon_dots[triangles_ids[0][2]].animate.set_color(PURE_BLUE),
+            run_time=1,
+        ))
+        self.play(triangles[0].animate.set_color(GRAY).set_stroke(width=DEFAULT_STROKE_WIDTH * 0.5), run_time=1/4)
+        self.wait()
+        self.next_slide()
+
+        while len(color_a) + len(color_b) + len(color_c) < len(polygon_dots_positions_list):
+            for triangle_id, triangle in zip(triangles_ids, triangles):
+                non_colored = solution.third_non_colored(triangle_id, [color_a, color_b, color_c])
+
+                if non_colored is not None:
+                    index, group = non_colored
+                    group.add(index)
+
+                    self.play(Succession(
+                        triangle.animate.set_color(YELLOW).set_stroke(width=DEFAULT_STROKE_WIDTH * 1.5),
+                        polygon_dots[index].animate.set_color(get_color_of_group(group)),
+                        run_time=1
+                    ))
+                    self.play(triangle.animate.set_color(GRAY).set_stroke(width=DEFAULT_STROKE_WIDTH * 0.5), run_time=1/4)
+        self.wait()
+        self.next_slide()
+
+        # Отчистка экрана
+        self.play(
+            LaggedStart(
+                Uncreate(polygon_dots, rate_func=linear),
+                Uncreate(polygon, rate_func=linear),
+                LaggedStart(
+                    [Uncreate(triangle.set_z_index(0)) for triangle in triangles]
+                ),
+                run_time=3,
+                lag_ratio=0.1,
+            )
+        )
+        self.wait()
 
 
 class Examples(Slide):
     def construct(self):
         pass
+
+
+# Создание нумерованных точек
+# numbered_dots = VGroup()
+# for i, dot in enumerate(polygon_dots, start=1):
+#     numbered_dots[i] = VGroup(
+#         polygon_dots[i].copy().scale(2),
+#         Text(
+#             str(i),
+#             color=DARKER_GRAY,
+#             height=polygon_dots[i].height * 0.85,
+#         )
+#     )
+
+
+# Разделение экрана + сдвиг многоугольлника
+# divided_line1 = Line(ORIGIN, DOWN * config.frame_height / 2 * 0.85, color=WHITE)
+# divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
+# divided_lines = VGroup(divided_line1, divided_line2).shift(RIGHT * config.frame_width / 8)
+# self.play(
+#     AnimationGroup(
+#         tripoly.animate.scale_to_fit_width(
+#             config.frame_width * (1 / 8 * 5) * 0.85
+#         ).shift(LEFT * (config.frame_width / 4 - config.frame_width / (8 * 2))),
+#         Create(divided_lines, lag_ratio=0),
+#     ),
+# )
+# self.next_slide()
