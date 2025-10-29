@@ -778,7 +778,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
     def construct(self):    # pylint: disable=missing-function-docstring
         # Блок схема
         block_diagram = (
-            ImageMobject("diagram (1).png")
+            ImageMobject(r"Visual_charts\Tricoloring\tricoloring_block_diagram.png")
             .scale_to_fit_height(config.frame_height * 0.95)
             .shift(UP * 2)
         )
@@ -796,8 +796,8 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         # Псевдокод
         pseudocode = (
             Code(
-                "tricolor_pseudocode.py",
-                formatter_style="emacs",
+                r"Visual_charts\Tricoloring\tricoloring_pseudocode.py",
+                formatter_style="one-dark",
                 language="python",
                 background="window",
             )
@@ -809,7 +809,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         self.wait()
         self.play(
             AnimationGroup(
-                block_diagram.animate.scale(0.8).next_to(
+                block_diagram.animate.scale(0.95).next_to(
                     config.left_side, RIGHT, buff=SMALL_BUFF
                 ),
                 pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
