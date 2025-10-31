@@ -627,6 +627,51 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         self.wait()
 
         self.play(Unwrite(ear_defenition))
+        self.wait()
+
+        # Добавление блок-схемы
+        block_diagram = (
+            ImageMobject(r"Visual_charts\Triangulation\tiangulation_block_diagram.png")
+            .scale_to_fit_height(config.frame_height - SMALL_BUFF * 4)
+            .shift(UP * 2)
+        )
+
+        self.next_slide()
+        self.play(AnimationGroup(
+            FadeIn(block_diagram),
+            block_diagram.animate.shift(DOWN * 2)
+        ))
+        self.wait()
+
+        # Добавление псевдокода
+        pseudocode = (
+            Code(
+                r"Visual_charts\Triangulation\triangulation_pseudocode.py",
+                formatter_style="dracula",
+                language="python",
+                background="window",
+            )
+            .next_to(config.right_side, RIGHT)
+            .scale_to_fit_width(config.frame_width / 5 * 4 * 0.95)
+        )
+        self.add(pseudocode)
+
+        self.next_slide()
+        self.play(AnimationGroup(
+            block_diagram.animate.scale(0.75 * 0.95).next_to(config.left_side, RIGHT, buff=SMALL_BUFF),
+            pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
+        ))
+        self.wait()
+        
+        # Отчистка экрана
+        self.next_slide()
+        self.play(
+            AnimationGroup(
+                block_diagram.animate.next_to(config.left_side, LEFT).scale(0.8),
+                pseudocode.animate.next_to(config.right_side, RIGHT).scale(0.8),
+            )
+        )
+        self.remove(block_diagram, pseudocode)
 
         # Добавление многоугольника
         self.next_slide()
@@ -818,19 +863,19 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         pseudocode = (
             Code(
                 r"Visual_charts\Tricoloring\tricoloring_pseudocode.py",
-                formatter_style="one-dark",
+                formatter_style="dracula",
                 language="python",
                 background="window",
             )
             .next_to(config.right_side, RIGHT)
-            .scale_to_fit_width(config.frame_width / 2 * 1.4 * 0.95)
+            .scale_to_fit_height((config.frame_height - SMALL_BUFF * 4) * 0.85)
         )
         self.add(pseudocode)
 
         self.wait()
         self.play(
             AnimationGroup(
-                block_diagram.animate.scale(0.95).next_to(
+                block_diagram.animate.next_to(
                     config.left_side, RIGHT, buff=SMALL_BUFF
                 ),
                 pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
