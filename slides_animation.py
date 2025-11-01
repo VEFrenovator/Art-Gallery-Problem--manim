@@ -42,6 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 """
 
 # Импорт библиотек и модулей
+import os
 from typing import List, Set
 from manim import *
 from manim_slides import Slide
@@ -139,7 +140,7 @@ class Greetings(Slide):  # pylint: disable=inherit-non-class
     Класс отображения приветственного текста (тема и автор).
     """
 
-    def construct(self):    # pylint: disable=missing-function-docstring
+    def construct(self):  # pylint: disable=missing-function-docstring
         self.wait()
 
         # Приветственный текст
@@ -209,7 +210,7 @@ class TableOfContents(Slide):  # pylint: disable=inherit-non-class
                 )
         return plain_lines
 
-    def construct(self):    # pylint: disable=missing-function-docstring
+    def construct(self):  # pylint: disable=missing-function-docstring
         self.next_slide()
         self.wait()
 
@@ -234,7 +235,7 @@ class ProblemDescription(Slide):  # pylint: disable=inherit-non-class
     Описание проблемы
     """
 
-    def construct(self):    # pylint: disable=missing-function-docstring
+    def construct(self):  # pylint: disable=missing-function-docstring
         self.next_slide()
         self.wait()
 
@@ -309,7 +310,7 @@ class ProblemDescription(Slide):  # pylint: disable=inherit-non-class
 
         # Отрисовка поля зрения
         guard_view_coords = solution.calculate_visibility(polygon, guard)
-        FOV_KWARGS = {    # pylint: disable=invalid-name
+        FOV_KWARGS = {  # pylint: disable=invalid-name
             "stroke_opacity": 0,
             "fill_color": GREEN,
             "fill_opacity": 1,
@@ -390,7 +391,7 @@ class Algorithm(Slide):  # pylint: disable=inherit-non-class
     Показ работы алгоритма Стива Фиска
     """
 
-    def construct(self):    # pylint: disable=missing-function-docstring
+    def construct(self):  # pylint: disable=missing-function-docstring
         self.next_slide()
         self.wait()
 
@@ -581,7 +582,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
     Подробное описание метода отрезания ушей.
     """
 
-    def construct(self):    # pylint: disable=missing-function-docstring
+    def construct(self):  # pylint: disable=missing-function-docstring
         def degenerate_triangle(triangle: Polygon, is_ear: bool) -> None:
             """
             Функция анимационно удаляет треугольник (`triangle`), в случае, если это ухо
@@ -637,10 +638,9 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         )
 
         self.next_slide()
-        self.play(AnimationGroup(
-            FadeIn(block_diagram),
-            block_diagram.animate.shift(DOWN * 2)
-        ))
+        self.play(
+            AnimationGroup(FadeIn(block_diagram), block_diagram.animate.shift(DOWN * 2))
+        )
         self.wait()
 
         # Добавление псевдокода
@@ -657,12 +657,16 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         self.add(pseudocode)
 
         self.next_slide()
-        self.play(AnimationGroup(
-            block_diagram.animate.scale(0.75 * 0.95).next_to(config.left_side, RIGHT, buff=SMALL_BUFF),
-            pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
-        ))
+        self.play(
+            AnimationGroup(
+                block_diagram.animate.scale(0.75 * 0.95).next_to(
+                    config.left_side, RIGHT, buff=SMALL_BUFF
+                ),
+                pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
+            )
+        )
         self.wait()
-        
+
         # Отчистка экрана
         self.next_slide()
         self.play(
@@ -694,7 +698,9 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         self.wait()
 
         i = 0
-        fantoms = VGroup()  # Группа треугольников, создаваемых в процессе анимации. Подробнее
+        fantoms = (
+            VGroup()
+        )  # Группа треугольников, создаваемых в процессе анимации. Подробнее
         # см. функцию degenerate_triangle
 
         while len(polygon_dots) > 3:
@@ -820,20 +826,20 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         # Итог: на экране только фантомы и треугольник-полигон (белый)
         # Делаем полигон фантомом
         self.next_slide()
-        self.next_slide()   # Двойной next_slide, чтобы сделать паузу
-        self.play(AnimationGroup(
-            ShrinkToCenter(polygon_dots[0]),
-            ShrinkToCenter(polygon_dots[1]),
-            ShrinkToCenter(polygon_dots[2]),
-            polygon.animate.set_stroke(BLUE_C, DEFAULT_STROKE_WIDTH / 2, 0.7),
-        ))
+        self.next_slide()  # Двойной next_slide, чтобы сделать паузу
+        self.play(
+            AnimationGroup(
+                ShrinkToCenter(polygon_dots[0]),
+                ShrinkToCenter(polygon_dots[1]),
+                ShrinkToCenter(polygon_dots[2]),
+                polygon.animate.set_stroke(BLUE_C, DEFAULT_STROKE_WIDTH / 2, 0.7),
+            )
+        )
         fantoms.add(polygon)
 
         # Отчистка экрана
         self.next_slide()
-        self.play(LaggedStart(
-            *[Uncreate(fantom)  for fantom in fantoms]
-        ))
+        self.play(LaggedStart(*[Uncreate(fantom) for fantom in fantoms]))
 
 
 class Tricoloring(Slide):  # pylint: disable=inherit-non-class
@@ -841,7 +847,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
     Подробное описание метода трираскраски полигона.
     """
 
-    def construct(self):    # pylint: disable=missing-function-docstring
+    def construct(self):  # pylint: disable=missing-function-docstring
         # Блок схема
         block_diagram = (
             ImageMobject(r"Visual_charts\Tricoloring\tricoloring_block_diagram.png")
@@ -875,9 +881,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         self.wait()
         self.play(
             AnimationGroup(
-                block_diagram.animate.next_to(
-                    config.left_side, RIGHT, buff=SMALL_BUFF
-                ),
+                block_diagram.animate.next_to(config.left_side, RIGHT, buff=SMALL_BUFF),
                 pseudocode.animate.next_to(config.right_side, LEFT, buff=SMALL_BUFF),
             )
         )
@@ -1000,8 +1004,86 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
 
 
 class Examples(Slide):  # pylint: disable=inherit-non-class
-    def construct(self):    # pylint: disable=missing-function-docstring
-        pass
+    def construct(self):  # pylint: disable=missing-function-docstring
+        # Слайд-шоу для перспектив
+        perspectives = Group()
+
+        for path in os.listdir("Visual_charts/Examples/Perspectives"):
+            perspective = ImageMobject(
+                f"Visual_charts/Examples/Perspectives/{path}"
+            ).scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
+            perspectives.add(perspective)
+
+        perspectives.arrange(buff=SMALL_BUFF * 2)
+        perspectives.next_to(config.right_side, RIGHT, buff=SMALL_BUFF)
+        self.add(perspectives)
+
+        for _ in range(len(perspectives)):
+            self.play(perspectives.animate.shift(LEFT * config.frame_width))
+            self.wait(3)
+        self.next_slide()
+
+        # Слайд-шоу для планировок
+        # Показ цветной планировки
+        plan = (
+            ImageMobject("Visual_charts\Examples\Plans\Plan.png")
+            .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
+            .next_to(config.right_side, RIGHT, buff=SMALL_BUFF)
+        )
+        self.add(plan)
+
+        self.play(
+            AnimationGroup(
+                perspectives.animate.shift(LEFT * config.frame_width),
+                plan.animate.move_to(ORIGIN)
+            )
+        )
+        self.wait()
+        self.remove(perspectives)
+        self.next_slide()
+
+        # Смена на контрастную
+        plan_contrasted = (
+            ImageMobject("Visual_charts\Examples\Plans\Plan_contrasted.png")
+            .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
+            .next_to(config.top, UP, buff=SMALL_BUFF)
+        )
+        self.add(plan_contrasted)
+
+        self.play(AnimationGroup(
+            plan.animate.shift(DOWN * config.frame_height),
+            plan_contrasted.animate.shift(DOWN * config.frame_height)
+        ))
+        self.wait()
+        self.remove(plan)
+        self.next_slide()
+
+        # Смена на контрастную без обозначений
+        plan_contrasted_nonotations = (
+            ImageMobject("Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png")
+            .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
+            .next_to(config.bottom, DOWN, buff=SMALL_BUFF)
+        )
+        self.add(plan_contrasted_nonotations)
+
+        self.play(AnimationGroup(
+            plan_contrasted.animate.shift(UP * config.frame_height),
+            plan_contrasted_nonotations.animate.shift(UP * config.frame_height)
+        ))
+        self.wait()
+        self.remove(plan_contrasted)
+        self.next_slide()
+
+
+# animations = []
+# for foto in fotos[:2]:
+#     animations.append(Succession(
+#         Animation(foto.move_to(ORIGIN), run_time=3),
+#         Wait(3),
+#         Animation(foto.next_to(config.left_side, LEFT), run_time=3),
+#     ))
+# self.play(LaggedStart(*animations, lag_ratio=2/3))
+# self.play(LaggedStartMap(Succession, fotos, lambda foto: [foto.animate.move_to(ORIGIN), Wait(3), foto.animate.next_to(config.left_side, LEFT)], lag_ratio=1/3, run_time=10))
 
 
 # Создание нумерованных точек
@@ -1042,6 +1124,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
 # for coords in polygon.get_vertices():
 #     polygon_dots.add(Dot(coords, color=WHITE))
 # comb_polygon = VGroup(polygon, polygon_dots)
+
 
 # triangles.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
 # self.wait()
