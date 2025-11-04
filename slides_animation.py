@@ -827,6 +827,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         # Итог: на экране только фантомы и треугольник-полигон (белый)
         # Делаем полигон фантомом
         self.next_slide()
+        self.wait()
         self.next_slide()  # Двойной next_slide, чтобы сделать паузу
         self.play(
             AnimationGroup(
@@ -986,6 +987,8 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
                         ),
                         run_time=1 / 4,
                     )
+        self.wait()
+        self.next_slide()
         self.wait()
         self.next_slide()
 
