@@ -1083,6 +1083,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         self.next_slide()
 
         # Векторизация
+        # Подгрузка
         def load_mesh_data(json_file_path: str):
             with open(json_file_path, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -1092,18 +1093,36 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
 
             return vertices, triangles_indices
 
-        # Пример использования упрощенной версии
-        vertices, triangles = load_mesh_data(
+        g_vertices_groups, g_triangles_groups = load_mesh_data(
             r"Visual_charts\Examples\Vectorized_plans\meshes_data.json"
         )
 
-        # Debug
-        # print(f"Loaded {len(vertices)} meshes")
-        # for i, (mesh_vertices, mesh_triangles) in enumerate(zip(vertices, triangles)):
-        #     print(f"Mesh {i}: {len(mesh_vertices)} vertices, {len(mesh_triangles)} triangles")
-
-        self.add(
-            Polygram(*vertices, color=WHITE)
+        # Создание галереи
+        gallery = (
+            Polygram(*g_vertices_groups, color=WHITE)
             .scale_to_fit_width(config.frame_width / 2)
             .move_to(ORIGIN)
         )
+        self.play(Create(gallery, run_time=4))
+        self.wait()
+        self.next_slide()
+
+        # Создание треугольников
+        g_triangles = VGroup()
+        for g, g_triangles_group in enumerate(g_triangles_groups):
+            for g_triangle in g_triangles_group:
+                coords = []
+                for i in g_triangle:
+                    coords.append(gallery.get_vertex_groups()[g][i])
+                g_triangles.add(
+                    Polygon(*coords,
+                            color=GRAY,
+                            stroke_width=DEFAULT_STROKE_WIDTH * 0.5,
+                            joint_type=LineJointType.BEVEL),
+                )
+
+        self.play(LaggedStart(*[Create(g_triangle)
+                                for g_triangle in g_triangles],
+                                run_time=5))
+        self.wait()
+        self.next_slide()
