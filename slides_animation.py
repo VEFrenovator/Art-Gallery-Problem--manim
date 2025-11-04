@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 # Импорт библиотек и модулей
 import os
+import json
 from typing import List, Set
 from manim import *
 from manim_slides import Slide
@@ -1035,7 +1036,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         self.play(
             AnimationGroup(
                 perspectives.animate.shift(LEFT * config.frame_width),
-                plan.animate.move_to(ORIGIN)
+                plan.animate.move_to(ORIGIN),
             )
         )
         self.wait()
@@ -1050,10 +1051,12 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         )
         self.add(plan_contrasted)
 
-        self.play(AnimationGroup(
-            plan.animate.shift(DOWN * config.frame_height),
-            plan_contrasted.animate.shift(DOWN * config.frame_height)
-        ))
+        self.play(
+            AnimationGroup(
+                plan.animate.shift(DOWN * config.frame_height),
+                plan_contrasted.animate.shift(DOWN * config.frame_height),
+            )
+        )
         self.wait()
         self.remove(plan)
         self.next_slide()
@@ -1066,66 +1069,38 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         )
         self.add(plan_contrasted_nonotations)
 
-        self.play(AnimationGroup(
-            plan_contrasted.animate.shift(UP * config.frame_height),
-            plan_contrasted_nonotations.animate.shift(UP * config.frame_height)
-        ))
+        self.play(
+            AnimationGroup(
+                plan_contrasted.animate.shift(UP * config.frame_height),
+                plan_contrasted_nonotations.animate.shift(UP * config.frame_height),
+            )
+        )
         self.wait()
         self.remove(plan_contrasted)
         self.next_slide()
 
+        # Векторизация
+        def load_mesh_data(json_file_path: str):
+            with open(json_file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
 
-# animations = []
-# for foto in fotos[:2]:
-#     animations.append(Succession(
-#         Animation(foto.move_to(ORIGIN), run_time=3),
-#         Wait(3),
-#         Animation(foto.next_to(config.left_side, LEFT), run_time=3),
-#     ))
-# self.play(LaggedStart(*animations, lag_ratio=2/3))
-# self.play(LaggedStartMap(Succession, fotos, lambda foto: [foto.animate.move_to(ORIGIN), Wait(3), foto.animate.next_to(config.left_side, LEFT)], lag_ratio=1/3, run_time=10))
+            vertices = [mesh["vertices"] for mesh in data["meshes"]]
+            triangles_indices = [mesh["triangles"] for mesh in data["meshes"]]
 
+            return vertices, triangles_indices
 
-# Создание нумерованных точек
-# numbered_dots = VGroup()
-# for i, dot in enumerate(polygon_dots, start=1):
-#     numbered_dots[i] = VGroup(
-#         polygon_dots[i].copy().scale(2),
-#         Text(
-#             str(i),
-#             color=DARKER_GRAY,
-#             height=polygon_dots[i].height * 0.85,
-#         )
-#     )
+        # Пример использования упрощенной версии
+        vertices, triangles = load_mesh_data(
+            r"Visual_charts\Examples\Vectorized_plans\meshes_data.json"
+        )
 
+        # Debug
+        # print(f"Loaded {len(vertices)} meshes")
+        # for i, (mesh_vertices, mesh_triangles) in enumerate(zip(vertices, triangles)):
+        #     print(f"Mesh {i}: {len(mesh_vertices)} vertices, {len(mesh_triangles)} triangles")
 
-# Разделение экрана + сдвиг многоугольлника
-# divided_line1 = Line(ORIGIN, DOWN * config.frame_height / 2 * 0.85, color=WHITE)
-# divided_line2 = divided_line1.copy().rotate(180 * DEGREES, about_point=ORIGIN)
-# divided_lines = VGroup(divided_line1, divided_line2).shift(RIGHT * config.frame_width / 8)
-# self.play(
-#     AnimationGroup(
-#         tripoly.animate.scale_to_fit_width(
-#             config.frame_width * (1 / 8 * 5) * 0.85
-#         ).shift(LEFT * (config.frame_width / 4 - config.frame_width / (8 * 2))),
-#         Create(divided_lines, lag_ratio=0),
-#     ),
-# )
-# self.next_slide()
-
-
-# # P.S. Но не забываем восстановить полигон и точки
-# polygon = (
-#     Polygon(*polygon_dots_positions_list, color=WHITE, z_index=1)
-#     .move_to(ORIGIN)
-#     .scale_to_fit_height(config.frame_height * 0.9)
-# )
-# polygon_dots = VGroup(z_index=2)
-# for coords in polygon.get_vertices():
-#     polygon_dots.add(Dot(coords, color=WHITE))
-# comb_polygon = VGroup(polygon, polygon_dots)
-
-
-# triangles.move_to(ORIGIN).scale_to_fit_height(config.frame_height * 0.9)
-# self.wait()
-# self.play(AnimationGroup(FadeIn(comb_polygon), FadeIn(triangles)))
+        self.add(
+            Polygram(*vertices, color=WHITE)
+            .scale_to_fit_width(config.frame_width / 2)
+            .move_to(ORIGIN)
+        )
