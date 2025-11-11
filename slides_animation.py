@@ -1097,15 +1097,25 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
             r"Visual_charts\Examples\Vectorized_plans\meshes_data.json"
         )
 
-        # Создание галереи
+        # Создание галереи + удаление прошлого плана
         gallery = (
             Polygram(*g_vertices_groups, color=WHITE)
             .scale_to_fit_width(config.frame_width / 2)
-            .move_to(ORIGIN)
+            .next_to(config.top, UP, SMALL_BUFF)
         )
-        self.play(Create(gallery, run_time=4))
+        self.add(gallery)
+
+        self.play(
+            AnimationGroup(
+                plan_contrasted_nonotations.animate.shift(DOWN * config.frame_height),
+                gallery.animate.shift(DOWN * config.frame_height),
+            )
+        )
+        self.remove(plan_contrasted_nonotations)
+
         self.wait()
         self.next_slide()
+        self.wait()
 
         # Создание треугольников
         g_triangles = VGroup()
