@@ -53,6 +53,7 @@ from shapely.geometry import (
 )
 import solution
 from subtheme_handler import SubthemeHandler
+from moving_camera_slide import MovingCameraSlide
 
 # Установка background стиля
 config.background_color = ManimColor([1/255, 1/255,30/255,0/255])
@@ -1010,7 +1011,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         self.wait()
 
 
-class Examples(Slide):  # pylint: disable=inherit-non-class
+class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
     def construct(self):  # pylint: disable=missing-function-docstring
         # Слайд-шоу для перспектив
         perspectives = Group()
@@ -1033,7 +1034,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         # Слайд-шоу для планировок
         # Показ цветной планировки
         plan = (
-            ImageMobject("Visual_charts\Examples\Plans\Plan.png")
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.right_side, RIGHT, buff=SMALL_BUFF)
         )
@@ -1051,7 +1052,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
 
         # Смена на контрастную
         plan_contrasted = (
-            ImageMobject("Visual_charts\Examples\Plans\Plan_contrasted.png")
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan_contrasted.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.top, UP, buff=SMALL_BUFF)
         )
@@ -1069,7 +1070,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
 
         # Смена на контрастную без обозначений
         plan_contrasted_nonotations = (
-            ImageMobject("Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png")
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.bottom, DOWN, buff=SMALL_BUFF)
         )
@@ -1085,10 +1086,45 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         self.remove(plan_contrasted)
         self.next_slide()
 
-        # Векторизация
-        # Векторизация планировки больше не будет обрабатываться с помощью manim. Данное
-        # решение было принято из-за сложности получения корректных контуров из blender.
-        # Дальнейшая работа с векторизацией будет производиться внутри DaVinci Resolve или
-        # подобных программ, а контуры отображены в изображении
-        # "Visual_charts\Examples\Plans\Plan_triangulated.png".
-        # Полный ChangeLog смотрите в Pull Request #3. Также можете посетить Discussion #4.
+        # Исчезновение контрастной планировки без обозначений и появление триангулированной
+        triangulated_plan = (
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan_triangulated.png")
+            .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
+            .move_to(ORIGIN)
+        )
+        self.add(triangulated_plan)
+        self.play(
+            plan_contrasted_nonotations.animate.set_opacity(0),
+        )
+        self.wait()
+        self.remove(plan_contrasted_nonotations)
+        self.next_slide()
+
+        # Анимация движения камеры
+        self.camera.frame.save_state()
+        point_1 = triangulated_plan.get_bottom() + UP * 0.5
+        point_2 = triangulated_plan.get_top() + DOWN * 0.5
+
+        self.play(
+            self.camera.frame.animate.move_to(point_1).set_width(
+                triangulated_plan.width * 0.5
+            ),
+        )
+        self.play(
+            self.camera.frame.animate.move_to(point_2).set_width(
+                triangulated_plan.width * 0.5
+            ),
+            run_time=8,
+            rate_func=double_smooth,
+        )
+        self.play(Restore(self.camera.frame))
+
+        self.wait()
+        self.next_slide()
+
+        # Удаление триангулированной планировки
+        self.play(
+            triangulated_plan.animate.set_opacity(0),
+        )
+        self.remove(triangulated_plan)
+        self.wait()
