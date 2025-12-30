@@ -54,6 +54,9 @@ from shapely.geometry import (
 import solution
 from subtheme_handler import SubthemeHandler
 
+# Установка background стиля
+config.background_color = ManimColor([1/255, 1/255,30/255,0/255])
+
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
 
@@ -1083,56 +1086,9 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         self.next_slide()
 
         # Векторизация
-        # Подгрузка
-        def load_mesh_data(json_file_path: str):
-            with open(json_file_path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-
-            vertices = [mesh["vertices"] for mesh in data["meshes"]]
-            triangles_indices = [mesh["triangles"] for mesh in data["meshes"]]
-
-            return vertices, triangles_indices
-
-        g_vertices_groups, g_triangles_groups = load_mesh_data(
-            r"Visual_charts\Examples\Vectorized_plans\meshes_data.json"
-        )
-
-        # Создание галереи + удаление прошлого плана
-        gallery = (
-            Polygram(*g_vertices_groups, color=WHITE)
-            .scale_to_fit_width(config.frame_width / 2)
-            .next_to(config.top, UP, SMALL_BUFF)
-        )
-        self.add(gallery)
-
-        self.play(
-            AnimationGroup(
-                plan_contrasted_nonotations.animate.shift(DOWN * config.frame_height),
-                gallery.animate.shift(DOWN * config.frame_height),
-            )
-        )
-        self.remove(plan_contrasted_nonotations)
-
-        self.wait()
-        self.next_slide()
-        self.wait()
-
-        # Создание треугольников
-        g_triangles = VGroup()
-        for g, g_triangles_group in enumerate(g_triangles_groups):
-            for g_triangle in g_triangles_group:
-                coords = []
-                for i in g_triangle:
-                    coords.append(gallery.get_vertex_groups()[g][i])
-                g_triangles.add(
-                    Polygon(*coords,
-                            color=GRAY,
-                            stroke_width=DEFAULT_STROKE_WIDTH * 0.5,
-                            joint_type=LineJointType.BEVEL),
-                )
-
-        self.play(LaggedStart(*[Create(g_triangle)
-                                for g_triangle in g_triangles],
-                                run_time=5))
-        self.wait()
-        self.next_slide()
+        # Векторизация планировки больше не будет обрабатываться с помощью manim. Данное
+        # решение было принято из-за сложности получения корректных контуров из blender.
+        # Дальнейшая работа с векторизацией будет производиться внутри DaVinci Resolve или
+        # подобных программ, а контуры отображены в изображении
+        # "Visual_charts\Examples\Plans\Plan_triangulated.png".
+        # Полный ChangeLog смотрите в Pull Request #3. Также можете посетить Discussion #4.
