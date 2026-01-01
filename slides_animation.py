@@ -51,6 +51,7 @@ from shapely.geometry import (
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
 )
+from copyrighting import CopyrightMark, CreateCopyrightMark, UncreateCopyrightMark
 import solution
 from subtheme_handler import SubthemeHandler
 from moving_camera_slide import MovingCameraSlide
@@ -1013,6 +1014,13 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
 
 class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
     def construct(self):  # pylint: disable=missing-function-docstring
+        # Знак копирайта для перспектив
+        copyright_sign = CopyrightMark(full_copyright_text="© Архитектурное бюро «Четвёртое измерение»")
+        copyright_sign.scale(0.75).to_corner(DR, buff=DEFAULT_MOBJECT_TO_EDGE_BUFFER * 0.75).set_z_index(3)
+        copyright_sign.rect = copyright_sign.rect.round_corners(0.1)
+
+        self.play(CreateCopyrightMark(copyright_sign))
+
         # Слайд-шоу для перспектив
         perspectives = Group()
 
@@ -1086,7 +1094,7 @@ class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
         self.remove(plan_contrasted)
         self.next_slide()
 
-        # Исчезновение контрастной планировки без обозначений и появление триангулированной
+        # Исчезновение контрастной планировки без обозначений и знака копирайта, появление триангулированной
         triangulated_plan = (
             ImageMobject(r"Visual_charts\Examples\Plans\Plan_triangulated.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
@@ -1095,9 +1103,10 @@ class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
         self.add(triangulated_plan)
         self.play(
             plan_contrasted_nonotations.animate.set_opacity(0),
+            copyright_sign.animate.set_opacity(0),
         )
         self.wait()
-        self.remove(plan_contrasted_nonotations)
+        self.remove(plan_contrasted_nonotations, copyright_sign)
         self.next_slide()
 
         # Анимация движения камеры
@@ -1121,10 +1130,3 @@ class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
 
         self.wait()
         self.next_slide()
-
-        # Удаление триангулированной планировки
-        self.play(
-            triangulated_plan.animate.set_opacity(0),
-        )
-        self.remove(triangulated_plan)
-        self.wait()
