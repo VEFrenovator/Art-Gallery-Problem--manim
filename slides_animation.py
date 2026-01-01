@@ -51,6 +51,7 @@ from shapely.geometry import (
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
 )
+from copyrighting import CopyrightMark, CreateCopyrightMark, UncreateCopyrightMark
 import solution
 from subtheme_handler import SubthemeHandler
 from moving_camera_slide import MovingCameraSlide
@@ -1013,6 +1014,22 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
 
 class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
     def construct(self):  # pylint: disable=missing-function-docstring
+        # Знак копирайта для перспектив
+        copyringt_sign = CopyrightMark(full_copyright_text="© АБ «Четвёртое измерение»")
+        copyright_group = VDict({
+            "sign": copyringt_sign,
+            "backgroung": BackgroundRectangle(
+                copyringt_sign,
+                color=WHITE,
+                fill_opacity=0.15,
+            ).round_corners()
+        }).to_corner(DR)
+
+        self.play(AnimationGroup(
+            CreateCopyrightMark(copyright_group["sign"]),
+            Create(copyright_group["backgroung"]),
+        ), lag_ratio=0)
+
         # Слайд-шоу для перспектив
         perspectives = Group()
 
@@ -1128,3 +1145,9 @@ class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
         )
         self.remove(triangulated_plan)
         self.wait()
+
+        # Удаление знака копирайта
+        self.play(
+            UncreateCopyrightMark(copyright_group["sign"]),
+            Uncreate(copyright_group["backgroung"]),
+        )
