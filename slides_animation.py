@@ -112,7 +112,7 @@ for coords in polygon_dots_positions_list:
 
 # Многоугольник
 polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
-VMobject()
+
 # Общая группа
 comb_polygon = (
     VGroup(polygon, polygon_dots)
@@ -1123,10 +1123,8 @@ class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
             self.camera.frame.animate.move_to(point_2).set_width(
                 triangulated_plan.width * 0.5
             ),
-            run_time=8,
+            run_time=15,
             rate_func=double_smooth,
         )
         self.play(Restore(self.camera.frame))
-
         self.wait()
-        self.next_slide()
