@@ -51,8 +51,13 @@ from shapely.geometry import (
     Polygon as ShapelyPolygon,
     Point as ShapelyPoint,
 )
+from copyrighting import CopyrightMark, CreateCopyrightMark, UncreateCopyrightMark
 import solution
 from subtheme_handler import SubthemeHandler
+from moving_camera_slide import MovingCameraSlide
+
+# Установка background стиля
+config.background_color = ManimColor([1/255, 1/255,30/255,0/255])
 
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
@@ -107,7 +112,7 @@ for coords in polygon_dots_positions_list:
 
 # Многоугольник
 polygon = Polygon(*polygon_dots_positions_list, color=WHITE)
-VMobject()
+
 # Общая группа
 comb_polygon = (
     VGroup(polygon, polygon_dots)
@@ -1007,8 +1012,15 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         self.wait()
 
 
-class Examples(Slide):  # pylint: disable=inherit-non-class
+class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
     def construct(self):  # pylint: disable=missing-function-docstring
+        # Знак копирайта для перспектив
+        copyright_sign = CopyrightMark(full_copyright_text="© Архитектурное бюро «Четвёртое измерение»")
+        copyright_sign.scale(0.75).to_corner(DR, buff=DEFAULT_MOBJECT_TO_EDGE_BUFFER * 0.75).set_z_index(3)
+        copyright_sign.rect = copyright_sign.rect.round_corners(0.1)
+
+        self.play(CreateCopyrightMark(copyright_sign))
+
         # Слайд-шоу для перспектив
         perspectives = Group()
 
@@ -1030,7 +1042,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         # Слайд-шоу для планировок
         # Показ цветной планировки
         plan = (
-            ImageMobject("Visual_charts\Examples\Plans\Plan.png")
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.right_side, RIGHT, buff=SMALL_BUFF)
         )
@@ -1048,7 +1060,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
 
         # Смена на контрастную
         plan_contrasted = (
-            ImageMobject("Visual_charts\Examples\Plans\Plan_contrasted.png")
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan_contrasted.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.top, UP, buff=SMALL_BUFF)
         )
@@ -1066,7 +1078,7 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
 
         # Смена на контрастную без обозначений
         plan_contrasted_nonotations = (
-            ImageMobject("Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png")
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.bottom, DOWN, buff=SMALL_BUFF)
         )
@@ -1082,47 +1094,37 @@ class Examples(Slide):  # pylint: disable=inherit-non-class
         self.remove(plan_contrasted)
         self.next_slide()
 
-        # Векторизация
-        # Подгрузка
-        def load_mesh_data(json_file_path: str):
-            with open(json_file_path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-
-            vertices = [mesh["vertices"] for mesh in data["meshes"]]
-            triangles_indices = [mesh["triangles"] for mesh in data["meshes"]]
-
-            return vertices, triangles_indices
-
-        g_vertices_groups, g_triangles_groups = load_mesh_data(
-            r"Visual_charts\Examples\Vectorized_plans\meshes_data.json"
-        )
-
-        # Создание галереи
-        gallery = (
-            Polygram(*g_vertices_groups, color=WHITE)
-            .scale_to_fit_width(config.frame_width / 2)
+        # Исчезновение контрастной планировки без обозначений и знака копирайта, появление триангулированной
+        triangulated_plan = (
+            ImageMobject(r"Visual_charts\Examples\Plans\Plan_triangulated.png")
+            .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .move_to(ORIGIN)
         )
-        self.play(Create(gallery, run_time=4))
+        self.add(triangulated_plan)
+        self.play(
+            plan_contrasted_nonotations.animate.set_opacity(0),
+            copyright_sign.animate.set_opacity(0),
+        )
         self.wait()
+        self.remove(plan_contrasted_nonotations, copyright_sign)
         self.next_slide()
 
-        # Создание треугольников
-        g_triangles = VGroup()
-        for g, g_triangles_group in enumerate(g_triangles_groups):
-            for g_triangle in g_triangles_group:
-                coords = []
-                for i in g_triangle:
-                    coords.append(gallery.get_vertex_groups()[g][i])
-                g_triangles.add(
-                    Polygon(*coords,
-                            color=GRAY,
-                            stroke_width=DEFAULT_STROKE_WIDTH * 0.5,
-                            joint_type=LineJointType.BEVEL),
-                )
+        # Анимация движения камеры
+        self.camera.frame.save_state()
+        point_1 = triangulated_plan.get_bottom() + UP * 0.5
+        point_2 = triangulated_plan.get_top() + DOWN * 0.5
 
-        self.play(LaggedStart(*[Create(g_triangle)
-                                for g_triangle in g_triangles],
-                                run_time=5))
+        self.play(
+            self.camera.frame.animate.move_to(point_1).set_width(
+                triangulated_plan.width * 0.5
+            ),
+        )
+        self.play(
+            self.camera.frame.animate.move_to(point_2).set_width(
+                triangulated_plan.width * 0.5
+            ),
+            run_time=15,
+            rate_func=double_smooth,
+        )
+        self.play(Restore(self.camera.frame))
         self.wait()
-        self.next_slide()
