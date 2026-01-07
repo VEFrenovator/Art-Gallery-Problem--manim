@@ -37,7 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 - `Tricoloring`: описание алгоритма жадной трираскраски.\n
 - `Examples`: примеры работы алгоритма при решении реальных задач расстановки камер
 видеонаблюдения.\n
-- `Conclusion`: заключение, бегущая строка, содержащая код анимации.\n
+- `CodeReview`: код ревью, бегущая строка, содержащая код анимации.\n
 - `ClosingRemarks`: заставка заключения (спасибо за внимание).\n
 """
 
@@ -1128,3 +1128,25 @@ class Examples(MovingCameraSlide):  # pylint: disable=inherit-non-class
         )
         self.play(Restore(self.camera.frame))
         self.wait()
+
+
+class CodeReview(Slide):    # pylint: disable=inherit-non-class
+    """
+    Бегущая строка всего кода анимации
+    """
+
+    def construct(self):  # pylint: disable=missing-function-docstring
+        # Импорт изображения с кодом и простановка размеров и позиции
+        body = ImageMobject(r"Visual_charts\Code_review\code_image_png_low.png")
+        body.scale_to_fit_width(config.frame_width * 0.9).next_to(config.bottom, DOWN)
+        self.add(body)
+
+        # Анимация прокрутки
+        self.play(
+            body.animate.next_to(config.top, UP),
+            run_time=60,
+            rate_func=linear,
+        )
+
+        self.wait()
+        self.remove(body)
