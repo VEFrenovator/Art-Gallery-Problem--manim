@@ -1150,3 +1150,31 @@ class CodeReview(Slide):    # pylint: disable=inherit-non-class
 
         self.wait()
         self.remove(body)
+
+
+class ClosingRemarks(Slide):  # pylint: disable=inherit-non-class
+    """
+    Заключительные слова и благодарности
+    """
+
+    def construct(self):  # pylint: disable=missing-function-docstring
+        # Текст благодарности
+        closing_remarks = Text(
+            "Cпасибо за внимание!",
+            font_size=48,
+        )
+
+        # Вывод
+        self.wait()
+        self.play(Write(closing_remarks))
+        self.wait()
+
+        # Обводка
+        self.next_slide(loop=True)
+        self.play(Circumscribe(closing_remarks, buff=MED_SMALL_BUFF))
+        self.wait()
+
+        # Удаление
+        self.next_slide()
+        self.play(Unwrite(closing_remarks))
+        self.wait()
