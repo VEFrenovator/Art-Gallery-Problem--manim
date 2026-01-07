@@ -57,8 +57,8 @@ from subtheme_handler import SubthemeHandler
 from moving_camera_slide import MovingCameraSlide
 
 # Установка background стиля
-config.background_color = ManimColor([1/255, 1/255,30/255,0/255])
-
+BACKGROUND_COLOR_CODE = [1/255, 1/255,30/255,0/255]
+config.background_color = ManimColor(BACKGROUND_COLOR_CODE)
 # Глобальный экземпляр SubthemeHandler
 global_subtheme_handler = SubthemeHandler()
 
