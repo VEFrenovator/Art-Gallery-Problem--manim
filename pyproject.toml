@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# Main
+name = "agp-manim"
+version = "0.1"
+# Dependecies
+requires-python = ">3.8,<3.14"
+dependencies = ["numpy", "shapely", "mapbox-earcut", "manim", "manim-slides"]
+optional-dependencies = { gui = ["PyQt6", "PySide6"] }
+# About project
+authors = [
+    { name = "VEF_renovator", email = "vladimir_e11@outlook.com" },
+    { name = "emhayki" },
+]
+maintainers = [{ name = "VEF_renovator", email = "vladimir_e11@outlook.com" }]
+description = "A ManimCE animation explaining Fisk's proof of the solution to the Art Gallery Problem (AGP)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
+keywords = [
+    "art-gallery-problem",
+    "visualization",
+    "triangulation",
+    "tircolor",
+    "manim",
+]
+urls = { Repository = "https://github.com/VEFrenovator/Art-Gallery-Problem--manim" }
+
+[tool.setuptools.packages.find]
+where = ["agp_manim"]

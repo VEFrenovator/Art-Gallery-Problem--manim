@@ -1,0 +1,14 @@
+# cache
+__pycache__
+.pytest_cache/
+
+# vs code
+.vscode/
+*.code-workspace
+
+# temp files
+test.py
+
+# media and slides
+media/
+slides/

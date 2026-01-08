@@ -1,0 +1,9 @@
+numpy
+shapely
+mapbox-earcut
+manim
+manim-slides
+
+[gui]
+PyQt6
+PySide6
