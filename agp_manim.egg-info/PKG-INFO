@@ -11,6 +11,8 @@ Keywords: art-gallery-problem,visualization,triangulation,tircolor,manim
 Requires-Python: <3.14,>3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE.md
+Requires-Dist: requests
+Requires-Dist: importlib-metadata
 Requires-Dist: numpy
 Requires-Dist: shapely
 Requires-Dist: mapbox-earcut

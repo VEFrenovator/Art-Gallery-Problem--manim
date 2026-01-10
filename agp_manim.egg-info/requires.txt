@@ -1,3 +1,5 @@
+requests
+importlib-metadata
 numpy
 shapely
 mapbox-earcut

@@ -8,7 +8,15 @@ name = "agp-manim"
 version = "0.1"
 # Dependecies
 requires-python = ">3.8,<3.14"
-dependencies = ["numpy", "shapely", "mapbox-earcut", "manim", "manim-slides"]
+dependencies = [
+    "requests",
+    "importlib-metadata",
+    "numpy",
+    "shapely",
+    "mapbox-earcut",
+    "manim",
+    "manim-slides",
+]
 optional-dependencies = { gui = ["PyQt6", "PySide6"] }
 # About project
 authors = [
@@ -29,5 +37,11 @@ keywords = [
 ]
 urls = { Repository = "https://github.com/VEFrenovator/Art-Gallery-Problem--manim" }
 
-[tool.setuptools.packages.find]
-where = ["agp_manim"]
+[tool.setuptools]
+packages = [
+    "agp_manim",
+    "agp_manim.animations",
+    "agp_manim.utils",
+    "agp_manim.animations.backdrop",
+]
+package-dir = { "agp_manim.animations.backdrop" = "agp_manim/animations/backdrop_animations_submodule" }
