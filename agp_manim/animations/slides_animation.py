@@ -57,7 +57,7 @@ from agp_manim.utils import (
     subtheme_handler,
 )
 
-BACKGROUND_COLOR_CODE = [1 / 255, 1 / 255, 30 / 255, 0 / 255]
+BACKGROUND_COLOR_CODE = [1 / 255, 1 / 255, 25 / 255, 0 / 255]
 
 # Установка background стиля
 config.background_color = ManimColor(BACKGROUND_COLOR_CODE)
@@ -239,7 +239,7 @@ class TableOfContents(Slide):  # pylint: disable=inherit-non-class
         self.play(LaggedStart(Unwrite(body), Unwrite(title), lag_ratio=0.3))
 
 
-class ProblemDescription(Slide):  # pylint: disable=inherit-non-class
+class ProblemDescription(moving_camera_slide.MovingCameraSlide):  # pylint: disable=inherit-non-class
     """
     Описание проблемы
     """
@@ -380,16 +380,37 @@ class ProblemDescription(Slide):  # pylint: disable=inherit-non-class
         )
         guard_view.clear_updaters()
 
-        # Создание новых охранников, которые полностью осматривают многоугольник
-        # Удаление ненужного
-        self.wait()
+        # Математическая цель задачи
+        # Написание вопроса выше кадра
+        question = Text("Как можно сформулировать цель задачи математически?", font_size=36, width=config.frame_width * 0.5).shift(UP * config.frame_height)
+        self.add(question)
+
+        # Движение камеры вверх
         self.next_slide()
+        self.camera.frame.save_state()
+        self.play(self.camera.frame.animate.shift(UP * config.frame_height))
+        self.next_slide(loop=True)
+        self.play(Circumscribe(question))
+        self.next_slide()
+
+        # Ответ
+        answer = Tex(r"$g(n) \rightarrow min$, где\\$n$ — количество вершин многоугольника,\\$g(n)$ — количество камер, достаточных\\для полного обзора многоугольника.",
+                    tex_template=rus_tex_template,
+                    font_size=36).move_to(question)
+        self.play(question.animate.next_to(answer, UP * 2), Write(answer))
+        self.next_slide()
+
+        # Движение камеры вниз
+        self.play(Restore(self.camera.frame))
+        self.remove(question, answer)
+
+        # Удаление ненужного
         self.wait()
 
         self.play(
             AnimationGroup(
                 FadeOut(guard_view.set_z_index(-1)),
-                Uncreate(guard),
+                ShrinkToCenter(guard),
             )
         )
         self.remove(guard_view)
@@ -444,7 +465,7 @@ class Algorithm(Slide):  # pylint: disable=inherit-non-class
         steps_strs = [
             r"Триангулировать многоугольник\\(без добавления новых вершин).",
             r"Раскрасить вершины в три цвета\\так, чтобы каждый треугольник\\был окрашен всеми тремя цветами.",
-            r"Теперь весь многоугольник\\просматривается всеми охранниками\\одной группы.",
+            r"Теперь весь многоугольник\\просматривается всеми камерами\\одной группы.",
             r"Цвет с меньшим количеством\\вершин образует множество максимум\\$\lfloor n/3 \rfloor$ вершин.",
         ]
         steps = VGroup()
@@ -601,7 +622,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 self.play(triangle.animate.set_fill(GREEN), run_time=0.5)
                 fantom = (
                     triangle.copy()
-                    .set_stroke(BLUE_C, DEFAULT_STROKE_WIDTH / 2, 0.7)
+                    .set_stroke(GRAY, DEFAULT_STROKE_WIDTH / 2, 0.7)
                     .set_fill(opacity=0)
                     .set_z_index(-2)
                 )
@@ -609,7 +630,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 fantoms.add(fantom)
             else:
                 self.play(triangle.animate.set_fill(RED), run_time=0.5)
-            self.play(triangle.animate.set_fill(opacity=0), run_time=0.5)
+            self.play(triangle.animate.set_fill(opacity=0), polygon_dots[i].animate.set_color(WHITE).scale(0.8), run_time=0.5)
             self.play(Uncreate(triangle), run_time=1)
 
         self.next_slide()
@@ -641,7 +662,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
 
         # Добавление блок-схемы
         block_diagram = (
-            ImageMobject(r"Visual_charts\Triangulation\tiangulation_block_diagram.png")
+            ImageMobject(r"agp_manim\animations\Visual_charts\Triangulation\tiangulation_block_diagram.png")
             .scale_to_fit_height(config.frame_height - SMALL_BUFF * 4)
             .shift(UP * 2)
         )
@@ -655,7 +676,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         # Добавление псевдокода
         pseudocode = (
             Code(
-                r"Visual_charts\Triangulation\triangulation_pseudocode.py",
+                r"agp_manim\animations\Visual_charts\Triangulation\triangulation_pseudocode.py",
                 formatter_style="dracula",
                 language="python",
                 background="window",
@@ -712,6 +733,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         )  # Группа треугольников, создаваемых в процессе анимации. Подробнее
         # см. функцию degenerate_triangle
 
+        WAITING_TIME = 0.25
         while len(polygon_dots) > 3:
             i %= len(polygon_dots)
 
@@ -735,15 +757,17 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 z_index=-1,
             )
 
-            # Закрашиваем вершину, которую сейчас проверяем
+            # Закрашиваем вершину, которую сейчас проверяем и выводим manim треугольник
             polygon_dots[i].set_z_index(3)
             self.play(
-                AnimationGroup(
-                    polygon_dots[i].animate.set_color(PURPLE_E),
-                    Indicate(polygon_dots[i], color=PURPLE_E),
+                Indicate(polygon_dots[i], color=PURPLE_E, rate_func=smooth),
+                Succession(
+                    Create(manim_triangle),
+                    manim_triangle.animate.set_fill(ORANGE, 1),
                 ),
-                run_time=0.5,
+                run_time=1.5,
             )
+            
 
             # Вывод manim треугольника
             self.play(
@@ -753,6 +777,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 ),
                 run_time=1,
             )
+            self.wait(WAITING_TIME)
 
             # Проверка 1. Возможное ухо внутри многоугольника?
             is_ear = shapely_polygon.covers(shapely_triangle)
@@ -760,6 +785,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
             # -> Если да, закрашиваем цветом, ближе к жёлтому, запускаем проверку 2
             if is_ear:
                 self.play(manim_triangle.animate.set_fill(YELLOW), run_time=0.5)
+                self.wait(WAITING_TIME)
 
                 # Проверка 2. Внутри возможного уха лежит(-ат) точки многоугольника?
                 has_vert_inside = False
@@ -777,7 +803,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 # Если была точка внутри, удаляем треугольник и идём дальше
                 if has_vert_inside:
                     vert.set_color(RED)
-                    self.wait(0.5)
+                    self.wait(WAITING_TIME)
                     vert.set_color(WHITE).scale(0.5)
                     degenerate_triangle(manim_triangle, is_ear=False)
                     i += 1
@@ -860,7 +886,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
     def construct(self):  # pylint: disable=missing-function-docstring
         # Блок схема
         block_diagram = (
-            ImageMobject(r"Visual_charts\Tricoloring\tricoloring_block_diagram.png")
+            ImageMobject(r"agp_manim\animations\Visual_charts\Tricoloring\tricoloring_block_diagram.png")
             .scale_to_fit_height(config.frame_height * 0.95)
             .shift(UP * 2)
         )
@@ -878,7 +904,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
         # Псевдокод
         pseudocode = (
             Code(
-                r"Visual_charts\Tricoloring\tricoloring_pseudocode.py",
+                r"agp_manim\animations\Visual_charts\Tricoloring\tricoloring_pseudocode.py",
                 formatter_style="dracula",
                 language="python",
                 background="window",
@@ -983,6 +1009,7 @@ class Tricoloring(Slide):  # pylint: disable=inherit-non-class
                             triangle.animate.set_color(YELLOW).set_stroke(
                                 width=DEFAULT_STROKE_WIDTH * 1.5
                             ),
+                            Wait(),
                             polygon_dots[index].animate.set_color(
                                 get_color_of_group(group)
                             ),
