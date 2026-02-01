@@ -1,0 +1,9 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/705998225_1754310298_631829896.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/705998225_307610567_2873729818.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/2659308615_1754310298_2128530963.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/2659308615_1754310298_1207960141.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/2659308615_2647550989_578637364.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/2659308615_1754310298_2300494229.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/2659308615_1754310298_2747962815.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/720p30/partial_movie_files/Greetings/2659308615_1879643481_1826348826.mp4'

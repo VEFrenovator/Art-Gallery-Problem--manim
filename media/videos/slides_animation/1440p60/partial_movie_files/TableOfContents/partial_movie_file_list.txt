@@ -1,0 +1,6 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/1440p60/partial_movie_files/TableOfContents/3572009972_2688965532_631829896.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/1440p60/partial_movie_files/TableOfContents/3572009972_419696107_2873729818.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/1440p60/partial_movie_files/TableOfContents/916560888_2834709167_1576160702.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/1440p60/partial_movie_files/TableOfContents/916560888_2834709167_1484297468.mp4'
+file 'file:C:/Users/vladi/Documents/CLONE_Art-gallery-theorem/media/videos/slides_animation/1440p60/partial_movie_files/TableOfContents/916560888_4111754717_3455178638.mp4'

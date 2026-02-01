@@ -1,0 +1,105 @@
+{
+  "slides": [
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\ce90346e4b4c1d23afc57c0ef9122d6edd590aae40884ea0f533c1f314d90485.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\ce90346e4b4c1d23afc57c0ef9122d6edd590aae40884ea0f533c1f314d90485_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\6d53ed09fe828d9c132e78b55e2320943c70218e867b9300f190f55c27c6214e.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\6d53ed09fe828d9c132e78b55e2320943c70218e867b9300f190f55c27c6214e_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\18d1cc212c38b8a51dd94a2781ded6a9ede6bf5071302bcea5c0bd295f4417bc.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\18d1cc212c38b8a51dd94a2781ded6a9ede6bf5071302bcea5c0bd295f4417bc_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\1bd35cea624e082481ef40f1244fe0303bb0f72d7e96c987bf5ae522874aa6ad.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\1bd35cea624e082481ef40f1244fe0303bb0f72d7e96c987bf5ae522874aa6ad_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\98bc9c2311f18f010236bb2facd4a0b4b5244d9e0ccbc8bc2d352ade7f53c912.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\98bc9c2311f18f010236bb2facd4a0b4b5244d9e0ccbc8bc2d352ade7f53c912.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\df573e5dace6cc33d9dcf20cd9ee627bb69fba5f038d8d6666732dfc9db4adff.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\df573e5dace6cc33d9dcf20cd9ee627bb69fba5f038d8d6666732dfc9db4adff.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\d3a8b415a397eeb2c9081a61eb88a5ccdf82c0e2dfc6cfc984f2915edace7344.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\d3a8b415a397eeb2c9081a61eb88a5ccdf82c0e2dfc6cfc984f2915edace7344.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides\\files\\Tricoloring\\35ab8617c219d18e36b49075c3623255a0a3174297a4db6818ec81d4d24eb896.mp4",
+      "rev_file": "slides\\files\\Tricoloring\\35ab8617c219d18e36b49075c3623255a0a3174297a4db6818ec81d4d24eb896.mp4"
+    }
+  ],
+  "resolution": [
+    3840,
+    2160
+  ],
+  "background_color": "#010119"
+}

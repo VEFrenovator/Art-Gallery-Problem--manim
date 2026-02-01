@@ -15,7 +15,7 @@ dependencies = [
     "shapely",
     "mapbox-earcut",
     "manim",
-    "manim-slides",
+    "manim-slides[full]",
 ]
 optional-dependencies = { gui = ["PyQt6", "PySide6"] }
 # About project

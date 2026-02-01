@@ -630,7 +630,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 fantoms.add(fantom)
             else:
                 self.play(triangle.animate.set_fill(RED), run_time=0.5)
-            self.play(triangle.animate.set_fill(opacity=0), polygon_dots[i].animate.set_color(WHITE).scale(0.8), run_time=0.5)
+            self.play(triangle.animate.set_fill(opacity=0), run_time=0.5)
             self.play(Uncreate(triangle), run_time=1)
 
         self.next_slide()
@@ -733,7 +733,6 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
         )  # Группа треугольников, создаваемых в процессе анимации. Подробнее
         # см. функцию degenerate_triangle
 
-        WAITING_TIME = 0.25
         while len(polygon_dots) > 3:
             i %= len(polygon_dots)
 
@@ -757,17 +756,15 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 z_index=-1,
             )
 
-            # Закрашиваем вершину, которую сейчас проверяем и выводим manim треугольник
+            # Закрашиваем вершину, которую сейчас проверяем
             polygon_dots[i].set_z_index(3)
             self.play(
-                Indicate(polygon_dots[i], color=PURPLE_E, rate_func=smooth),
-                Succession(
-                    Create(manim_triangle),
-                    manim_triangle.animate.set_fill(ORANGE, 1),
+                AnimationGroup(
+                    polygon_dots[i].animate.set_color(PURPLE_E),
+                    Indicate(polygon_dots[i], color=PURPLE_E),
                 ),
-                run_time=1.5,
-            )
-            
+                run_time=0.5,
+            )            
 
             # Вывод manim треугольника
             self.play(
@@ -777,7 +774,6 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 ),
                 run_time=1,
             )
-            self.wait(WAITING_TIME)
 
             # Проверка 1. Возможное ухо внутри многоугольника?
             is_ear = shapely_polygon.covers(shapely_triangle)
@@ -785,11 +781,16 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
             # -> Если да, закрашиваем цветом, ближе к жёлтому, запускаем проверку 2
             if is_ear:
                 self.play(manim_triangle.animate.set_fill(YELLOW), run_time=0.5)
-                self.wait(WAITING_TIME)
 
                 # Проверка 2. Внутри возможного уха лежит(-ат) точки многоугольника?
                 has_vert_inside = False
-                for vert in polygon_dots[i + 2 :] + polygon_dots[: i - 1]:
+
+                if (i + 2) % len(polygon_dots) > (i - 1) % len(polygon_dots):
+                    sub_p_dots = polygon_dots[i + 2 :] + polygon_dots[: i - 1]
+                else:
+                    sub_p_dots = polygon_dots[i + 2 : i - 1]
+
+                for vert in sub_p_dots:
                     vert.set_color(ORANGE).scale(2)
                     # Если точка внутри, останавливаем цикл и выходим
                     if shapely_triangle.covers(ShapelyPoint(vert.get_center()[:2])):
@@ -803,7 +804,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 # Если была точка внутри, удаляем треугольник и идём дальше
                 if has_vert_inside:
                     vert.set_color(RED)
-                    self.wait(WAITING_TIME)
+                    self.wait(0.5)
                     vert.set_color(WHITE).scale(0.5)
                     degenerate_triangle(manim_triangle, is_ear=False)
                     i += 1
@@ -868,7 +869,7 @@ class Triangulation(Slide):  # pylint: disable=inherit-non-class
                 ShrinkToCenter(polygon_dots[0]),
                 ShrinkToCenter(polygon_dots[1]),
                 ShrinkToCenter(polygon_dots[2]),
-                polygon.animate.set_stroke(BLUE_C, DEFAULT_STROKE_WIDTH / 2, 0.7),
+                polygon.animate.set_stroke(GRAY, DEFAULT_STROKE_WIDTH / 2, 0.7),
             )
         )
         fantoms.add(polygon)
@@ -1060,9 +1061,9 @@ class Examples(
         # Слайд-шоу для перспектив
         perspectives = Group()
 
-        for path in os.listdir("Visual_charts/Examples/Perspectives"):
+        for path in os.listdir("agp_manim/animations/Visual_charts/Examples/Perspectives"):
             perspective = ImageMobject(
-                f"Visual_charts/Examples/Perspectives/{path}"
+                f"agp_manim/animations/Visual_charts/Examples/Perspectives/{path}"
             ).scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             perspectives.add(perspective)
 
@@ -1078,7 +1079,7 @@ class Examples(
         # Слайд-шоу для планировок
         # Показ цветной планировки
         plan = (
-            ImageMobject(r"Visual_charts\Examples\Plans\Plan.png")
+            ImageMobject(r"agp_manim\animations\Visual_charts\Examples\Plans\Plan.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.right_side, RIGHT, buff=SMALL_BUFF)
         )
@@ -1096,7 +1097,7 @@ class Examples(
 
         # Смена на контрастную
         plan_contrasted = (
-            ImageMobject(r"Visual_charts\Examples\Plans\Plan_contrasted.png")
+            ImageMobject(r"agp_manim\animations\Visual_charts\Examples\Plans\Plan_contrasted.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.top, UP, buff=SMALL_BUFF)
         )
@@ -1115,7 +1116,7 @@ class Examples(
         # Смена на контрастную без обозначений
         plan_contrasted_nonotations = (
             ImageMobject(
-                r"Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png"
+                r"agp_manim\animations\Visual_charts\Examples\Plans\Plan_contrasted_nonotations.png"
             )
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .next_to(config.bottom, DOWN, buff=SMALL_BUFF)
@@ -1134,7 +1135,7 @@ class Examples(
 
         # Исчезновение контрастной планировки без обозначений и знака копирайта, появление триангулированной
         triangulated_plan = (
-            ImageMobject(r"Visual_charts\Examples\Plans\Plan_triangulated.png")
+            ImageMobject(r"agp_manim\animations\Visual_charts\Examples\Plans\Plan_triangulated.png")
             .scale_to_fit_width(config.frame_width - SMALL_BUFF * 2)
             .move_to(ORIGIN)
         )
@@ -1166,6 +1167,10 @@ class Examples(
         )
         self.play(Restore(self.camera.frame))
         self.wait()
+
+        # Отчистка экрана
+        self.next_slide()
+        self.play(FadeOut(triangulated_plan), run_time=2.5)
 
 
 class CodeReview(Slide):  # pylint: disable=inherit-non-class
