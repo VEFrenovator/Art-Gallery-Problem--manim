@@ -1,111 +1,150 @@
 <p align="center">
-  <img src=https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/Readme_illustrations/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
+  <img src=./Readme_illustrations/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
   <br />
   <br />
-  <i>A ManimCE animation explaining <b>Fisk's proof</b> of the solution to the <b>Art Gallery Problem</b></i>
-  <br />
+  <i>A project with a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/media/videos/slides_animation/2160p60">ManimCE animation</a>, a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/slides/conv/full_touchscreen.html">presentation</a> and a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/documents/SiS_EXP_%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0%20%D0%BE%20%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BD%D0%BE%D0%B9%20%D0%B3%D0%B5%D0%BB%D0%B5%D1%80%D0%B5%D0%B5%20%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.pdf">report</a> explaining <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof">Fisk's solution</a></b> to the <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem">Art Gallery Problem</a>.</b></i>
   <br />
   <i>by VEFrenovator</i>
+  <br />
+  <br />
+  <b><i>From author:</i></b> I'm now only entering the github community and I'll be happy for <i>any</i> your response. Suggestions, tips, pieces of advice — write me anything you want or consider necessary. You can use the <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/discussions">Discussions page</a> or my <a href="mailto:vladimir_e11@outlook.com"> email</a>.
 </p>
 
 ---
 
-> [!NOTE]
-> This file is *translated on other languages*!
-> - **ENG** English (current)
-> - [**RUS** Русский](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/README-ru.md)
+# What is this project about?
 
-> [!NOTE]
-> #### Versions sheet
-> This `Python v3.11` project uses the following libraries:
-> - `ManimCE v0.19.0`
-> - `Shapely v2.1.1`
-> - `Mapbox-earcut v1.0.3`
-> - ***Only for `slides_animation.py`:*** `manim-slides v5.5.1`
-> - *Python built-ins: `typing`, `math`*
+This repository was created while working on my individual final project. The main issue comes from a visibility problem in computational geometry — the [Art Gallery Problem](https://en.wikipedia.org/wiki/Art_gallery_problem). Inspired by [3blue1brown](https://www.youtube.com/c/3blue1brown) channel, I created an animation covering the key aspects of the problem statement, the [Fisk's solution](https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof) and the real-world application of the solution.
 
 > [!IMPORTANT]
-> All comments (in code) and texts (in animation) are written in ***Russian***. The author welcomes pull requests with an English version.
+> 
+> **Non-full English support**
+> 
+> The main language of the project is Russian. This is actually not a big problem, because the animation does not contains a lot of text, but you clearly have to translate them, what requeues working with code, if you are going to take a speech with it. Also, comments in code are mostly Russian.
+>
+> **I really welcome pull requests with an English version, or even asking issues — please, contact me and I will try to set aside my time to make changes and rerender the animations in English.** For now, there is only readme translated.
+
+# Before start: how it was ^_~. Gallery
+
+Some scenes from the animation, charts from the report and the presentation itself :)
+
+<table width="100%" border="0" cellpadding="5">
+  <tr>
+    <td><video src="./media/videos/slides_animation/2160p60/ProblemDescription.mp4#t=0:00:02" controls width="100%"></video></td>
+    <td><video src="./media/videos/slides_animation/2160p60/Triangulation.mp4#t=20,40" controls width="100%"></video></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Expand to see more from the Gallery! (ps. x = cos x and x - (cos x) = 0 just kind of got into the frame on my presentation).</summary>
+
+  <table width="100%" border="0" cellpadding="5">
+    <tr>
+      <td><video src="./media/videos/slides_animation/2160p60/Algorithm.mp4#t=0:00:01" controls width="100%"></video></td>
+      <td><video src="./media/videos/slides_animation/2160p60/Greetings.mp4#t=0:00:01" controls width="100%"></video></td>
+    </tr>
+    <tr>
+      <td><video src="./media/videos/slides_animation/2160p60/Tricoloring.mp4#t=0:00:04" controls width="100%"></video></td>
+      <td><video src="./media/videos/slides_animation/2160p60/Examples.mp4#t=0:00:04" controls width="100%"></video></td>
+    <tr>
+      <td style="text-align: center;"><img src="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png" alt="Earcut triangulation process chart" width="25%"></td>
+      <td><img src="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png" alt="Steve Fisk algorithm chart"></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><img src="./Readme_illustrations/presentation_1_blurred.png" alt="Presentation photo 1" width="50%"></td>
+      <td style="text-align: center;"><img src="./Readme_illustrations/presentation_2_blurred.png" alt="Presentation photo 2" width="90%"></td>
+    </tr>
+  </table>
+</details>
+
+---
 
 # Installation
-## Manim and other PyPI libraries
-> [!WARNING]
-> This installation method may not be universal. It is recommended to consult each module's documentation to avoid issues.
 
-All libraries listed in the versions sheet (*excluding Python built-ins*) can be installed via `cmd` or `PowerShell` (on Windows) using the 
-```cmd
-pip install [...package name...]
-```
-command.
-
-> [!NOTE]
-> The installation process for manim-slides may differ slightly. For details, refer to the [manim-slides documentation/installation](https://manim-slides.eertmans.be/latest/installation.html#installation).
-
-## Files installation
-To install the project, run `git clone` or download the `raw` files directly. For more details, see [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
-
-# Animation classes description
 > [!TIP]
-> The order of classes (in this document and in the code) follows their logical sequence. Use this order during presentations.
+> 
+> **Before installing anything**, decide if you really need it. It is possible to see the animations and the presentation without installing anything. See more in the [Quick User Guide, or FAQ](#quick-user-guide-or-faq) section.
 
-## `Greetings`
-The `Greetings` class displays the project's theme and author.  
-To modify the theme or author, update the `theme` or `author` variables.
+## Standard install
 
-## `TableOfContents`
-Converts a *multi-dimensional Python list* of subthemes from `subtheme_handler.py/SubthemeHandler/subtheme_variants` into a *multi-level `VGroup` list* and animates it.
+<!-- The following installation process 
+To simplify the work, a python package called **`agp-manim`** (shortened from the name of the repo). Unfortunately, it is not on github releases or PyPi (for now). The easiest way is to
 
-## `ProblemDescription`
-Displays task conditions for the Art Gallery Problem:
-- The observer has *360° visibility at all times*
-- The observer must be placed *on a polygon vertex*
+1) Clone the repo
+2) Install the package using a `./pyproject.toml` script via pip. -->
+Execute the following commands:
 
-As of 17.07.2025 (D/M/Y), `ProblemDescription` **does not** include these Art Gallery Theorem conditions but should:
-- The polygon is *simple*
-- We seek the *minimum number* of observers for general cases
+```bash
+git clone --recurse-submodules https://github.com/VEFrenovator/Art-Gallery-Problem--manim
+cd Art-Gallery-Problem--manim
+pip install -e .
+```
 
-## `Algorithm`
-The `Algorithm` class illustrates key steps of [Steve Fisk's proof](https://en.wikipedia.org/wiki/Art_gallery_problem):
-1. *Triangulate* the polygon (without adding vertices)
-2. *Tricolor* vertices so each triangle contains all three colors
-3. Place observers at vertices of the least-used color
+After executing, the `agp-manim` python lib will be available in your current python environment, and you will be able to 
 
-## `Triangulation`
-Demonstrates polygon triangulation using the ear-clipping method.
+```python
+import agp-manim
+```
 
-## `Tricoloring`
-> [!NOTE]
-> This class is incomplete.
+in your python files.
 
-# Files descriptions and usage
+<!-- > [!NOTE]
+> **Edibility (`-e` flag)**
+> 
+> If you clearly are **not** going to make changes in the source code, you can drop the `-e` flag (aka "editable package"), but everything will still work with it, too. -->
 
-> [!WARNING]
-> Some texts in `animation.py` and `slides_animation.py` require LaTeX rendering. Review the full [Manim installation guide](https://docs.manim.community/en/stable/installation.html).
-
-## `animation.py`
-
-> [!CAUTION]
-> Some animations in this module are DEPRECATED. All changes and updates are located in `slides_animation.py`.
+> [!IMPORTANT]
+> 
+> **Limited functionality**
+> 
+> The agp-manim itself **does not** provide important libs and has limited functionality. The installation process above provides only the "Base package", as stated in the Custom install table. See more in the [Custom install](#custom-install) section below.
 
 
-Contains standard Manim animations. Render using the [ManimCE rendering process](https://github.com/ManimCommunity/manim?tab=readme-ov-file#usage) to output `.mp4` files.
+## Custom install
 
-## `slides_animation.py`
-Contains animations identical to `animation.py` but with interactive pauses. See [manim-slides quickstart](https://manim-slides.eertmans.be/latest/quickstart.html).
+In this table, you can see the abilities of different installation preferences. The table is sorted by the increasing number of installed packages and abilities. You can choose the best that fits your needs.
 
-## `solution.py`
-Provides computational functions:
-- `calculate_visibility` – Computes an observer's field of view within a polygon. Returns visible area coordinates.
+<!-- 
+Name | Command(s) | Packages installed | Abilities
+:--: | :--------: | :----------------: | :-------:
+Repo | `git clone --recurse-submodules https://github.com/VEFrenovator/Art-Gallery-Problem--manim` | — (repo files only) | To open files locally, including 4k `.mp4` rendered media; Run `.html` presentation using your installed browser.
+Base package | (See [Standard install section](#standard-install) above) | _Everything from Repo_ + `agp-manim, setuptools, requests, importlib-metadata` | _Everything from Repo_ + To import the `agp-manim` lib and its submodules in your python files
+`manim-slides-present` package | _All commands from Base_ + `pip install -e .[manim-slides-present]` | _Everything from Base_ + `manim-slides[full], PyQt6, PySide6` | _Everything from Base_ + To run the presentation using `.json` manim-slides files
+`dev` package | _All commands from Base_ + `pip install -e .[dev]` | _Everything from `manim-slides-present`_ + `numpy, shapely, mapbox-earcut, pillow, manim` | _Everything from `manim-slides-present`_ + To run and render any `.py` file in the repo, and to lead the development of the project (e.g., to add new features, fix bugs, etc.)
+`full` package **(alias for `dev`)** | _All commands from Base_ + `pip install -e .[full]` | _Everything from `dev`_ | _Everything from `dev`_ 
+-->
 
-> [!CAUTION]
-> As of 17.07.2025 (D/M/Y), `calculate_visibility` **does not** work correctly when the observer is on an edge/vertex.
 
-- `triangulate` – Performs polygon triangulation via `mapbox_earcut.triangulate_float32`. Returns triangle vertex indices (e.g., `(0, 1, 2)` = triangle from first three polygon vertices).
-- `tricolor` – Assigns three colors to triangulation vertices where each triangle contains all colors. `polygon_verts_count` specifies original vertex count. Returns `tuple[set, set, set]` of color groups.
+Name | Command(s) | Packages installed | Abilities
+:--: | :--------: | :----------------: | :-------:
+Repo | `git clone --recurse-submodules https://github.com/VEFrenovator/Art-Gallery-Problem--manim` | — (repo files only) | To open files locally, including 4k `.mp4` rendered media; Run `.html` presentation using your browser.
+Base package | <u><i>All commands from [Standard install section](#standard-install) above</i></u> | <u><i>Everything from Repo</i></u> + `agp-manim, setuptools, requests, importlib-metadata` | <u><i>Everything from Repo</i></u> + To import the `agp-manim` lib and its submodules, classes and functions in your python files
+`manim-slides-present` package | <u><i>All commands from Base</i></u> + `pip install -e .[manim-slides-present]` | <u><i>Everything from Base</i></u> + `manim-slides[full], PyQt6, PySide6` | <u><i>Everything from Base</i></u> + To run the presentation using `.json` manim-slides files
+`dev` package | <u><i>All commands from Base</i></u> + `pip install -e .[dev]` | <u><i>Everything from <code>manim-slides-present</code></i></u> + `numpy, shapely, mapbox-earcut, pillow, manim` | <u><i>Everything from <code>manim-slides-present</code></i></u> + To run and render any `.py` file in the repo, and to lead the development of the project (e.g., to add new features, fix bugs, etc.)
+`full` package **(alias for `dev`)** | <u><i>All commands from Base</i></u> + `pip install -e .[full]` | <u><i>Everything from <code>dev</code></i></u> | <u><i>Everything from <code>dev</code></i></u>
 
-## `subtheme_handler.py`
-> [!NOTE]
-> This section is incomplete.
+
+# Quick User Guide, or FAQ
+
+This section is a shorted version of the full user guide. For better compression, subsections' titles are like questions, and the answers are inside.
+
+<details>
+  <summary>I want to see the animation and/or presentation, but I don't want to install anything. Can I do so?</summary>
+
+  **Yes, almost.**
+
+  You can find the rendered 4k animation's scenes in the [`./media/videos/slides_animation/2160p60`](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/media/videos/slides_animation/2160p60) folder and download them separately. Similarly, the presentation is available in the [`./slides/conv`](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/slides/conv) folder. There are many `.html` presentation files, but the main is [`full_touchscreen.html`](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/slides/conv/full_touchscreen.html). For more information about others, see
+
+</details>
+
+<!-- <details>
+  <summary></summary>
+</details> -->
+
+# How to contribute
+
+There are a huge field of freedom in helping this project! For guidlines, ideas and more, see [CONTRIBUTING.md](https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/LICENSE.md).
 
 # License
-Licensed under MIT. Copyright © VEFrenovator ([LICENSE.md](https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/LICENSE.md)).
+
+Licensed under MIT. Copyright © 2025 VEFrenovator. For license text, see [LICENSE.md](https://github.com/VEFrenovator/Art-Gallery-Theorem--manim/blob/main/LICENSE.md).
