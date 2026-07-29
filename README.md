@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=./Readme_illustrations/ArtGalleyTheoremLogo_ManimCE_v0.19.0.png>
+  <img src=./Readme_illustrations/v0_2_banner.png>
   <br />
   <br />
   <i>A project with a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/media/videos/slides_animation/2160p60">ManimCE animation</a>, a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/slides/conv/full_touchscreen.html">presentation</a> and a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/documents/SiS_EXP_%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0%20%D0%BE%20%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BD%D0%BE%D0%B9%20%D0%B3%D0%B5%D0%BB%D0%B5%D1%80%D0%B5%D0%B5%20%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.pdf">report</a> explaining <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof">Fisk's solution</a></b> to the <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem">Art Gallery Problem</a>.</b></i>
