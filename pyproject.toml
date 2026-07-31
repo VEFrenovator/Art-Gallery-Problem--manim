@@ -5,19 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 # Main
 name = "agp-manim"
-version = "0.1"
+version = "0.2.0"
 # Dependecies
 requires-python = ">3.8,<3.14"
-dependencies = [
-    "requests",
-    "importlib-metadata",
-    "numpy",
-    "shapely",
-    "mapbox-earcut",
-    "manim",
-    "manim-slides[full]",
-]
-optional-dependencies = { gui = ["PyQt6", "PySide6"] }
+dependencies = ["requests", "importlib-metadata"]
+
 # About project
 authors = [
     { name = "VEF_renovator", email = "vladimir_e11@outlook.com" },
@@ -37,10 +29,24 @@ keywords = [
 ]
 urls = { Repository = "https://github.com/VEFrenovator/Art-Gallery-Problem--manim" }
 
+[project.optional-dependencies]
+manim-slides-present = ["manim-slides[full]", "PyQt6", "PySide6"]
+dev = [
+    "numpy",
+    "shapely",
+    "mapbox-earcut",
+    "pillow",
+    "manim",
+    "agp-manim[manim-slides-present]",
+]
+# Full is alias for dev
+full = ["apg-manim[dev]"]
+
 [tool.setuptools]
 packages = [
     "agp_manim",
     "agp_manim.animations",
+    "agp_manim.static",
     "agp_manim.utils",
     "agp_manim.animations.backdrop",
 ]
