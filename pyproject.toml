@@ -5,13 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 # Main
 name = "agp-manim"
-version = "0.2"
+version = "0.2.0"
 # Dependecies
 requires-python = ">3.8,<3.14"
-dependencies = [
-    "requests",
-    "importlib-metadata",
-]
+dependencies = ["requests", "importlib-metadata"]
 
 # About project
 authors = [
@@ -33,11 +30,7 @@ keywords = [
 urls = { Repository = "https://github.com/VEFrenovator/Art-Gallery-Problem--manim" }
 
 [project.optional-dependencies]
-manim-slides-present = [
-    "manim-slides[full]",
-    "PyQt6",
-    "PySide6",
-]
+manim-slides-present = ["manim-slides[full]", "PyQt6", "PySide6"]
 dev = [
     "numpy",
     "shapely",
@@ -47,16 +40,14 @@ dev = [
     "agp-manim[manim-slides-present]",
 ]
 # Full is alias for dev
-full = [ "apg-manim[dev]" ]
+full = ["apg-manim[dev]"]
 
 [tool.setuptools]
 packages = [
     "agp_manim",
     "agp_manim.animations",
-    "agp_manim.documents",
     "agp_manim.static",
     "agp_manim.utils",
     "agp_manim.animations.backdrop",
 ]
 package-dir = { "agp_manim.animations.backdrop" = "agp_manim/animations/backdrop_animations_submodule" }
-
