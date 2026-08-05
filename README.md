@@ -67,8 +67,8 @@ Here you can find selected scenes from the animation, charts from the report, an
     <tr class="media-row">
       <td style="text-align: center;">
         <!-- Thumbnail for Tricoloring -->
-        <img src="./readme_illustrations/thumbnails/ProblemDescription_00_21.png" alt="Problem Description Thumbnail" width="100%"><br>
-        <a href="./media/videos/slides_animation/2160p60/ProblemDescription.mp4">Watch Video "Problem Description" (Download raw may be required)</a>
+        <img src="./readme_illustrations/thumbnails/Tricoloring_00_25_500.png" alt="Tricoloring Thumbnail" width="100%"><br>
+        <a href="./media/videos/slides_animation/2160p60/Tricoloring.mp4">Watch Video "Tricoloring" (Download raw may be required)</a>
       </td>
       <td style="text-align: center;">
         <!-- Thumbnail for Examples -->
