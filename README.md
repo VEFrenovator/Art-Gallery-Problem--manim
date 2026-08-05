@@ -1,7 +1,10 @@
+<!-- TODO: Add link to the Full User  -->
+
+
 <p align="center">
-  <img src="./Readme_illustrations/v0_2_banner.png" alt="Project banner illustration">
+  <img src="./readme_illustrations/banners/v0_2.png" alt="Project banner illustration">
   <br /><br />
-  <i>A project featuring a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/media/videos/slides_animation/2160p60">ManimCE animation</a>, an accompanying <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/slides/conv/full_touchscreen.html">presentation</a>, and a <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/documents/SiS_EXP_%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0%20%D0%BE%20%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BD%D0%BE%D0%B9%20%D0%B3%D0%B5%D0%BB%D0%B5%D1%80%D0%B5%D0%B5%20%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.pdf">report</a> explaining <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof">Fisk's solution</a></b> to the <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem">Art Gallery Problem</a></b>.</i>
+  <i>A project featuring a <a href="./media/videos/slides_animation/2160p60">ManimCE animation</a>, an accompanying <a href="./slides/conv/full_touchscreen.html">presentation</a>, and a <a href="./documents/SiS_EXP_%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0%20%D0%BE%20%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BD%D0%BE%D0%B9%20%D0%B3%D0%B5%D0%BB%D0%B5%D1%80%D0%B5%D0%B5%20%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.pdf">report</a> explaining <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof">Fisk's solution</a></b> to the <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem">Art Gallery Problem</a></b>.</i>
   <br />
   <i>by VEFrenovator</i>
   <br /><br />
@@ -29,31 +32,65 @@ This repository was created as part of my individual final project, focusing on 
 Here you can find selected scenes from the animation, charts from the report, and excerpts from the presentation itself.
 
 <table width="100%" border="0" cellpadding="5">
-  <tr>
-    <td><video src="./media/videos/slides_animation/2160p60/ProblemDescription.mp4#t=0:00:02" controls width="100%"></video></td>
-    <td><video src="./media/videos/slides_animation/2160p60/Triangulation.mp4#t=20,40" controls width="100%"></video></td>
+  <tr class="media-row">
+    <td style="text-align: center;">
+      <!-- Thumbnail for Problem Description -->
+      <img src="./readme_illustrations/thumbnails/ProblemDescription_00_21.png" alt="Problem Description Thumbnail" width="100%"><br>
+      <a href="./media/videos/slides_animation/2160p60/ProblemDescription.mp4">Watch Video "Problem Description" (Download raw may be required)</a>
+    </td>
+    <td style="text-align: center;">
+      <!-- Thumbnail for Triangulation -->
+      <img src="./readme_illustrations/thumbnails/Triangulation_01_09.png" alt="Triangulation Thumbnail" width="100%"><br>
+      <a href="./media/videos/slides_animation/2160p60/Triangulation.mp4">Watch Video "Triangulation" (Download raw may be required)</a>
+    </td>
   </tr>
 </table>
 
 <details>
-  <summary>Expand to see more from the Gallery! (ps. x = cos x and x - (cos x) = 0 just kind of got into the frame on my presentation).</summary>
+  <summary><b><u>Expand to see more from the Gallery! (ps. x = cos x and x - (cos x) = 0 just kind of got into the frame).</u></b></summary>
 
   <table width="100%" border="0" cellpadding="5">
-    <tr>
-      <td><video src="./media/videos/slides_animation/2160p60/Algorithm.mp4#t=0:00:01" controls width="100%"></video></td>
-      <td><video src="./media/videos/slides_animation/2160p60/Greetings.mp4#t=0:00:01" controls width="100%"></video></td>
+    <!-- First Row of Details -->
+    <tr class="media-row">
+      <td style="text-align: center;">
+        <!-- Thumbnail for Algorithm -->
+        <img src="./readme_illustrations/thumbnails/Algorithm_00_32.png" alt="Algorithm Thumbnail" width="100%"><br>
+        <a href="./media/videos/slides_animation/2160p60/Algorithm.mp4">Watch Video "Algorithm" (Download raw may be required)</a>
+      </td>
+      <td style="text-align: center;">
+        <!-- Thumbnail for Greetings -->
+        <img src="./readme_illustrations/thumbnails/Greetings_00_05_500.png" alt="Greetings Thumbnail" width="100%"><br>
+        <a href="./media/videos/slides_animation/2160p60/Greetings.mp4">Watch Video "Greetings" (Download raw may be required)</a>
+      </td>
     </tr>
-    <tr>
-      <td><video src="./media/videos/slides_animation/2160p60/Tricoloring.mp4#t=0:00:04" controls width="100%"></video></td>
-      <td><video src="./media/videos/slides_animation/2160p60/Examples.mp4#t=0:00:04" controls width="100%"></video></td>
+    <!-- Second Row of Details -->
+    <tr class="media-row">
+      <td style="text-align: center;">
+        <!-- Thumbnail for Tricoloring -->
+        <img src="./readme_illustrations/thumbnails/Tricoloring_00_25_500.png" alt="Tricoloring Thumbnail" width="100%"><br>
+        <a href="./media/videos/slides_animation/2160p60/Tricoloring.mp4">Watch Video "Tricoloring" (Download raw may be required)</a>
+      </td>
+      <td style="text-align: center;">
+        <!-- Thumbnail for Examples -->
+        <img src="./readme_illustrations/thumbnails/Examples_00_08.png" alt="Examples Thumbnail" width="100%"><br>
+        <a href="./media/videos/slides_animation/2160p60/Examples.mp4">Watch Video "Examples" (Download raw may be required)</a>
+      </td>
     </tr>
-    <tr>
-      <td style="text-align: center;"><img src="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png" alt="Earcut triangulation process chart" width="25%"></td>
-      <td style="text-align: center;"><img src="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png" alt="Steve Fisk algorithm chart"></td>
+    <!-- Third Row of Details -->
+    <tr class="media-row">
+      <td style="background-color: #ffffff; text-align: center;">
+        <img src="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png" alt="Earcut triangulation process chart" width="25%"><br>
+        <a href="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png">Watch Image "Earcut triangulation process chart"</a>
+        </td>
+      <td style="background-color: #ffffff; text-align: center;">
+        <img src="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png" alt="Steve Fisk algorithm chart"><br>
+        <a href="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png">Watch Image "Steve Fisk algorithm chart"
+      </td>
     </tr>
-    <tr>
-      <td style="text-align: center;"><img src="./Readme_illustrations/presentation_1_blurred.png" alt="Presentation photo 1" width="50%"></td>
-      <td style="text-align: center;"><img src="./Readme_illustrations/presentation_2_blurred.png" alt="Presentation photo 2" width="90%"></td>
+    <!-- Fourth Row of Details -->
+    <tr class="media-row">
+      <td style="text-align: center;"><img src="./readme_illustrations/me_on_presentation/wide_shot.png" alt="Presentation photo 1" width="50%"><br>Me on presentation</td>
+      <td style="text-align: center;"><img src="./readme_illustrations/me_on_presentation/medium_shot.png" alt="Presentation photo 2" width="90%"><br>...still me :)</td>
     </tr>
   </table>
 </details>
@@ -118,7 +155,7 @@ This section is a **shortened** version of the full user guide. For better compr
 
   **Yes, almost.**
 
-  You can download the rendered 4k animation scenes from [`./media/videos/slides_animation/2160p60`](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/media/videos/slides_animation/2160p60) and the presentation materials from [`./slides/conv`](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/slides/conv). While there are many `.html` presentation files, the main file is [`full_touchscreen.html`](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/tree/main/slides/conv/full_touchscreen.html). For details on other assets, please see [link to full guide].
+  You can download the rendered 4k animation scenes from [`./media/videos/slides_animation/2160p60`](./media/videos/slides_animation/2160p60) and the presentation materials from [`./slides/conv`](./slides/conv). While there are many `.html` presentation files, the main file is [`full_touchscreen.html`](./slides/conv/full_touchscreen.html). For details on other assets, please see [link to full guide].
 
 </details>
 
@@ -128,8 +165,8 @@ This section is a **shortened** version of the full user guide. For better compr
 
 # How to Contribute
 
-This project welcomes contributions! For guidelines, ideas, and more information, please see [CONTRIBUTING.md](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/CONTRIBUTING.md).
+This project welcomes contributions! For guidelines, ideas, and more information, please see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 # License
 
-Licensed under MIT. Copyright © 2025 VEFrenovator. For the license text, please see [LICENSE.md](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/LICENSE.md).
+Licensed under MIT. Copyright © 2025 VEFrenovator. For the license text, please see [LICENSE.md](./LICENSE.md).
