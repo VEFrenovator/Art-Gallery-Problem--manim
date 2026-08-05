@@ -1,12 +1,5 @@
 <!-- TODO: Add link to the Full User  -->
 
-<style>
-  .white-canvas {
-    background-color: #ffffff;
-    text-align: center;
-    vertical-align: middle;
-  }
-</style>
 
 <p align="center">
   <img src="./readme_illustrations/banners/v0_2.png" alt="Project banner illustration">
@@ -85,11 +78,11 @@ Here you can find selected scenes from the animation, charts from the report, an
     </tr>
     <!-- Third Row of Details -->
     <tr class="media-row">
-      <td class="white-canvas">
+      <td style="background-color: #ffffff; text-align: center;">
         <img src="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png" alt="Earcut triangulation process chart" width="25%"><br>
         <a href="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png">Watch Image "Earcut triangulation process chart"</a>
         </td>
-      <td class="white-canvas">
+      <td style="background-color: #ffffff; text-align: center;">
         <img src="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png" alt="Steve Fisk algorithm chart"><br>
         <a href="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png">Watch Image "Steve Fisk algorithm chart"
       </td>
