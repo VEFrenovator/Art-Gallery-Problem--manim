@@ -1,7 +1,15 @@
 <!-- TODO: Add link to the Full User  -->
 
+<style>
+  .white-canvas {
+    background-color: #ffffff;
+    text-align: center;
+    vertical-align: middle;
+  }
+</style>
+
 <p align="center">
-  <img src="./Readme_illustrations/v0_2_banner.png" alt="Project banner illustration">
+  <img src="./readme_illustrations/banners/v0_2.png" alt="Project banner illustration">
   <br /><br />
   <i>A project featuring a <a href="./media/videos/slides_animation/2160p60">ManimCE animation</a>, an accompanying <a href="./slides/conv/full_touchscreen.html">presentation</a>, and a <a href="./documents/SiS_EXP_%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0%20%D0%BE%20%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BD%D0%BE%D0%B9%20%D0%B3%D0%B5%D0%BB%D0%B5%D1%80%D0%B5%D0%B5%20%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.pdf">report</a> explaining <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof">Fisk's solution</a></b> to the <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem">Art Gallery Problem</a></b>.</i>
   <br />
@@ -46,7 +54,7 @@ Here you can find selected scenes from the animation, charts from the report, an
 </table>
 
 <details>
-  <summary>Expand to see more from the Gallery! (ps. x = cos x and x - (cos x) = 0 just kind of got into the frame).</summary>
+  <summary><b><u>Expand to see more from the Gallery! (ps. x = cos x and x - (cos x) = 0 just kind of got into the frame).</u></b></summary>
 
   <table width="100%" border="0" cellpadding="5">
     <!-- First Row of Details -->
@@ -77,13 +85,19 @@ Here you can find selected scenes from the animation, charts from the report, an
     </tr>
     <!-- Third Row of Details -->
     <tr class="media-row">
-      <td style="text-align: center;"><img src="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png" alt="Earcut triangulation process chart" width="25%"></td>
-      <td style="text-align: center;"><img src="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png" alt="Steve Fisk algorithm chart"></td>
+      <td class="white-canvas">
+        <img src="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png" alt="Earcut triangulation process chart" width="25%"><br>
+        <a href="./media/images/static/trimmed/Earcut_ManimCE_v0.19.1.png">Watch Image "Earcut triangulation process chart"</a>
+        </td>
+      <td class="white-canvas">
+        <img src="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png" alt="Steve Fisk algorithm chart"><br>
+        <a href="./media/images/static/trimmed/SteveFiskAlgorithm_ManimCE_v0.19.1.png">Watch Image "Steve Fisk algorithm chart"
+      </td>
     </tr>
     <!-- Fourth Row of Details -->
     <tr class="media-row">
-      <td style="text-align: center;"><img src="./readme_illustrations/me_on_presentation/wide_shot.png" alt="Presentation photo 1" width="50%"></td>
-      <td style="text-align: center;"><img src="./readme_illustrations/me_on_presentation/medium_shot.png" alt="Presentation photo 2" width="90%"></td>
+      <td style="text-align: center;"><img src="./readme_illustrations/me_on_presentation/wide_shot.png" alt="Presentation photo 1" width="50%"><br>Me on presentation</td>
+      <td style="text-align: center;"><img src="./readme_illustrations/me_on_presentation/medium_shot.png" alt="Presentation photo 2" width="90%"><br>...still me :)</td>
     </tr>
   </table>
 </details>
