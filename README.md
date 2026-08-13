@@ -1,8 +1,14 @@
-<!-- TODO: Add link to the Full User  -->
-
-
 <p align="center">
   <img src="./readme_illustrations/banners/v0_2.png" alt="Project banner illustration">
+  <br /><br />
+  <!-- <a href="https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/main/LICENSE.md">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+  </a> -->
+  <img src="https://img.shields.io/badge/new_feature-brightgreen" alt="New Feature: docs">
+  <br />
+  <a href="https://art-gallery-problem-manim.readthedocs.io/en/latest/">
+  <img src="https://readthedocs.org/projects/art-gallery-problem-manim/badge/?version=latest" alt="Documentation Status">
+  </a>
   <br /><br />
   <i>A project featuring a <a href="./media/videos/slides_animation/2160p60">ManimCE animation</a>, an accompanying <a href="./slides/conv/full_touchscreen.html">presentation</a>, and a <a href="./documents/SiS_EXP_%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0%20%D0%BE%20%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BD%D0%BE%D0%B9%20%D0%B3%D0%B5%D0%BB%D0%B5%D1%80%D0%B5%D0%B5%20%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.pdf">report</a> explaining <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem#Fisk's_short_proof">Fisk's solution</a></b> to the <b><a href="https://en.wikipedia.org/wiki/Art_gallery_problem">Art Gallery Problem</a></b>.</i>
   <br />
@@ -25,7 +31,22 @@ This repository was created as part of my individual final project, focusing on 
 > 
 > The primary language of the project is Russian. This is not necessarily a problem, as the animation does not contain a lot of textual content; however, translating those texts is necessary if you plan to use the media in an English speech or presentation. Furthermore, most comments within the code are also in Russian.
 > 
-> **I highly welcome pull requests with English versions, and I encourage submitting issues.** Please contact me so I can dedicate time to making changes and rerendering the animations into English. Currently, only this README has been translated.
+> **I highly welcome pull requests with English versions, and I encourage submitting issues.** Please contact me so I can dedicate time to making changes and rerendering the animations into English.
+
+# Table of Contents
+
+- [What Is This Project About?](#what-is-this-project-about)
+- [Table of Contents](#table-of-contents)
+- [Media Gallery: A Visual Overview](#media-gallery-a-visual-overview)
+- [Installation](#installation)
+  - [Standard Installation](#standard-installation)
+  - [Custom Installation](#custom-installation)
+- [FAQ and User Guide](#faq-and-user-guide)
+- [How to Contribute](#how-to-contribute)
+- [Code of Conduct](#code-of-conduct)
+- [License](#license)
+
+---
 
 # Media Gallery: A Visual Overview
 
@@ -100,7 +121,7 @@ Here you can find selected scenes from the animation, charts from the report, an
 # Installation
 
 > [!TIP]
-> **Pre-Check:** Before installing anything, please determine if you genuinely need to install packages. It is possible to view the animations and presentation without any installation. See more details in the [Quick User Guide or FAQ](#quick-user-guide-or-faq) section.
+> **Pre-Check:** Before installing anything, please determine if you genuinely need to install packages. It is possible to view the animations and presentation without any installation. See more details in the [FAQ and User Guide](#faq-and-user-guide) section.
 
 ## Standard Installation
 
@@ -146,16 +167,16 @@ Base package | <u><i>All commands from [Standard Installation](#standard-install
 `full` package **(alias for `dev`)** | <u><i>All commands from Base</i></u> + `pip install -e .[full]` | <u><i>Everything from `dev`</i></u> | <u><i>Everything from `dev`</i></u>
 
 
-# Quick User Guide or FAQ
+# FAQ and User Guide
 
-This section is a **shortened** version of the full user guide. For better compression, subsection titles are structured like questions, and the answers follow immediately after.
+This section is a **shortened** version of the full [User Guide](https://art-gallery-problem-manim.readthedocs.io/en/latest/). For better compression, subsection titles are structured like questions, and the answers follow immediately after.
 
 <details>
   <summary>I want to see the animation and/or presentation without installing anything. Can I do so?</summary>
 
   **Yes, almost.**
 
-  You can download the rendered 4k animation scenes from [`./media/videos/slides_animation/2160p60`](./media/videos/slides_animation/2160p60) and the presentation materials from [`./slides/conv`](./slides/conv). While there are many `.html` presentation files, the main file is [`full_touchscreen.html`](./slides/conv/full_touchscreen.html). For details on other assets, please see [link to full guide].
+  You can download the rendered 4k animation scenes from [`./media/videos/slides_animation/2160p60`](./media/videos/slides_animation/2160p60) and the presentation materials from [`./slides/conv`](./slides/conv). While there are many `.html` presentation files, the main file is [`full_touchscreen.html`](./slides/conv/full_touchscreen.html).
 
 </details>
 
@@ -166,6 +187,10 @@ This section is a **shortened** version of the full user guide. For better compr
 # How to Contribute
 
 This project welcomes contributions! For guidelines, ideas, and more information, please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+# Code of Conduct
+
+Full Code of Conduct, and how to enforce it, can be found in [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 
 # License
 
