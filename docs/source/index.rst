@@ -6,12 +6,19 @@
 Art Gallery Problem manim documentation
 =======================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+Hello!
 
+As promised, the v0.2.0 update was planned for November 1st, 2026. It was supposed to contain an updated README and ReadTheDocs pages. Unfortunately, I have less and less free time to keep maintaining the project.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+So, now I:
 
+1. Merged the ``dev`` and ``main`` branches, making the v0.2.0 changes visible.
+2. Am stopping support for the project and will not expand the existing RTD documentation.
+
+In conclusion, the project is now in its final state!
+
+Thank you for your help: `@AyushBhandariNITK <https://github.com/AyushBhandariNITK>`_, `@emhayki <https://github.com/emhayki>`_, and `@SupernovaIa <https://github.com/SupernovaIa>`_.
+
+----
+
+If you want the missing RTD docs, send me your feedback, and I will try to do everything I can to continue expanding the project.
