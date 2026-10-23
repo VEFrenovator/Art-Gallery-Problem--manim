@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> A big documentation and readme update is coming! Preview of [new and much helpful readme](https://github.com/VEFrenovator/Art-Gallery-Problem--manim/blob/dev/README.md) is available in the dev branch. More about the v0.2.0 you can read on the Discussions page
-
 <p align="center">
   <img src="./readme_illustrations/banners/v0_2.png" alt="Project banner illustration">
   <br /><br />
